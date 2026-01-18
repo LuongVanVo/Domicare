@@ -1,0 +1,2 @@
+﻿class EmailVerificationRequest:
+    token: str
