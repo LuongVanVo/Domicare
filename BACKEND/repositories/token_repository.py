@@ -1,6 +1,7 @@
 ﻿from typing import Optional
 
 from models.token import Token
+from models.user import User
 
 
 # find by refresh token
@@ -32,6 +33,16 @@ def delete_all(tokens: list[Token]):
 def delete_by_user_id(user_id: int):
     Token.objects.filter(user_id=user_id).delete()
 
+# create token
+def create_token(user: User, refresh_token: str, expiration) -> Token:
+    token = Token(
+        user=user,
+        refresh_token=refresh_token,
+        expiration=expiration
+    )
+    token.save()
+    return token
+
 class TokenRepository:
     def find_by_refresh_token(self, refresh_token: str) -> Optional[Token]:
         return find_by_refresh_token(refresh_token)
@@ -50,3 +61,6 @@ class TokenRepository:
 
     def delete_by_user_id(self, user_id: int):
         delete_by_user_id(user_id)
+
+    def create_token(self, user: User, refresh_token: str, expiration) -> Token:
+        return create_token(user, refresh_token, expiration)

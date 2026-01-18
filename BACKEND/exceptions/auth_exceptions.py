@@ -2,7 +2,8 @@
 from .base import UnauthorizedException, BadRequestException
 from .constants import ExceptionConstants
 
-
+class AuthException(Exception):
+    pass
 class InvalidEmailOrPassword(UnauthorizedException):
     """Invalid credentials exception"""
     def __init__(self, detail="Email chưa được đăng ký hoặc mật khẩu sa"):
@@ -14,12 +15,15 @@ class EmailNotConfirmedException(UnauthorizedException):
     def __init__(self, detail="Email chưa được xác thực."):
         super().__init__(detail=detail)
 
-
 class InvalidTokenException(UnauthorizedException):
     """Invalid token exception"""
     def __init__(self, detail="Invalid token"):
         super().__init__(detail=detail)
 
+class InvalidRefreshTokenException(AuthException):
+    def __init__(self, message="Invalid or expired refresh token"):
+        self.message = message
+        super().__init__(self.message)
 
 class TokenExpiredException(UnauthorizedException):
     """Token expired exception"""

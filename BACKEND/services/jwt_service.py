@@ -1,10 +1,15 @@
 ﻿from datetime import datetime, timezone, timedelta
+from typing import Optional
 
+from typing import Tuple
 from django.conf import settings
 import logging
 import jwt
 import uuid
 
+from pydantic import EmailStr
+
+from exceptions.auth_exceptions import InvalidRefreshTokenException
 from exceptions.base import NotFoundException
 from repositories.token_repository import TokenRepository
 from repositories.user_repository import UserRepository
@@ -48,6 +53,7 @@ class JwtService:
             'sub': email,
             'email': email,
             'roles': roles_names,
+            'type': 'access',
             'iat': now,
             'exp': expiration,
         }
@@ -82,6 +88,12 @@ class JwtService:
 
         return refresh_token
 
+    # create token
+    def create_tokens(self, email: str) -> Tuple[str, str]:
+        access_token = self.create_access_token(email)
+        refresh_token = self.create_refresh_token(email)
+        return access_token, refresh_token
+
     def is_refresh_token_valid(self, refresh_token: str) -> bool:
         if not refresh_token or not refresh_token.strip():
             logger.warning("[JWT] Attempted to validate null or empty refresh token")
@@ -100,11 +112,35 @@ class JwtService:
 
         return valid
 
-    def decode_token(self, token: str) -> dict:
+    def verify_access_token(self, token: str) -> Optional[dict]:
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=[self.JWT_ALGORITHM])
+            if payload.get('type') != 'access':
+                return None
             return payload
         except jwt.ExpiredSignatureError:
             raise NotFoundException("Token has expired")
         except jwt.InvalidTokenError:
             raise NotFoundException("Invalid token")
+
+    # get user from refresh token
+    def get_user_from_refresh_token(self, refresh_token: str):
+        token = self.token_repo.find_by_refresh_token(refresh_token)
+        if not token:
+            raise InvalidRefreshTokenException("Invalid refresh token")
+        return token.user
+
+    # delete refresh token
+    def delete_refresh_token(self, refresh_token: str):
+        token = self.token_repo.find_by_refresh_token(refresh_token)
+        if token:
+            self.token_repo.delete(token)
+
+    # delete all user tokens
+    def delete_all_user_tokens(self, user_id: int):
+        self.token_repo.delete_by_user_id(user_id)
+
+    # generate random password
+    @staticmethod
+    def generate_random_password() -> str:
+        return str(uuid.uuid4())

@@ -1,0 +1,68 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác thực Email Thành Công</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;}
+        .container {
+            max-width: 500px;
+            margin: 40px auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .logo {
+            width: 120px;margin-bottom: 20px;
+        }
+        .success-icon {
+            color: #4CAF50;
+            font-size: 72px;
+            margin: 20px 0;
+        }
+        h2 {
+            color: #333;
+        }
+        p {
+            color: #555;
+            font-size: 16px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #888;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #2a89f1;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background-color: #1e6fc9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="{{ logo_url }}" alt="DomiCare Logo" class="logo">
+        <div class="success-icon">✓</div>
+        <h2>Xác nhận Email Thành Công!</h2>
+        <p>Cảm ơn bạn đã xác nhận địa chỉ email.</p>
+        <p>Tài khoản của bạn đã được kích hoạt hoàn toàn.</p>
+        <a href="{{ frontend_url }}/login" class="btn">Đăng nhập ngay</a>
+        <p class="footer">© 2025 DomiCare. All rights reserved.</p>
+    </div>
+</body>
+</html>

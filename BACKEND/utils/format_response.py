@@ -1,6 +1,4 @@
 """Format Response Utility"""
-from rest_framework.response import Response
-from rest_framework import status
 from typing import Any, Optional
 
 
@@ -9,36 +7,34 @@ class FormatRestResponse:
     Format REST API responses
     Matches FormatRestResponse.java
     """
-    
+
     @staticmethod
-    def success(data: Any = None, message: str = "Success", status_code: int = status.HTTP_200_OK) -> Response:
+    def success(data: Any = None, message: str = "Success") -> dict:
         """Format success response"""
-        response_data = {
+        return {
             'success': True,
             'message': message,
             'data': data
         }
-        return Response(response_data, status=status_code)
-    
+
     @staticmethod
-    def created(data: Any = None, message: str = "Created successfully") -> Response:
+    def created(data: Any = None, message: str = "Created successfully") -> dict:
         """Format created response"""
-        return FormatRestResponse.success(data, message, status.HTTP_201_CREATED)
-    
+        return FormatRestResponse.success(data, message)
+
     @staticmethod
-    def error(message: str = "Error occurred", errors: Optional[dict] = None, status_code: int = status.HTTP_400_BAD_REQUEST) -> Response:
+    def error(message: str = "Error occurred", errors: Optional[dict] = None) -> dict:
         """Format error response"""
-        response_data = {
+        return {
             'success': False,
             'message': message,
             'errors': errors
         }
-        return Response(response_data, status=status_code)
-    
+
     @staticmethod
-    def paginated(data: list, total: int, page: int, page_size: int, message: str = "Success") -> Response:
+    def paginated(data: list, total: int, page: int, page_size: int, message: str = "Success") -> dict:
         """Format paginated response"""
-        response_data = {
+        return {
             'success': True,
             'message': message,
             'data': data,
@@ -49,4 +45,3 @@ class FormatRestResponse:
                 'total_pages': (total + page_size - 1) // page_size
             }
         }
-        return Response(response_data, status=status.HTTP_200_OK)
