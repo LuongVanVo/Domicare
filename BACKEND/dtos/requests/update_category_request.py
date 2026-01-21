@@ -23,7 +23,7 @@ class UpdateCategoryRequest(BaseModel):
         description='New description for the category',
     )
 
-    image_id: Optional[str] = Field(
+    image_id: Optional[int] = Field(
         None,
         description='ID/URL of the new image'
     )

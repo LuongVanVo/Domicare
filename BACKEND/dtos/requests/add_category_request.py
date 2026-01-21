@@ -15,7 +15,7 @@ class AddCategoryRequest(BaseModel):
         description='Description of the category'
     )
 
-    image_id: str = Field(
+    image_id: int = Field(
         ...,
         description='ID/URL of image'
     )
