@@ -1,11 +1,16 @@
 """Category Exceptions"""
-from .base import NotFoundException, ConflictException, BadRequestException
+from .base import NotFoundException, ConflictException, BadRequestException, AlreadyExistsException
 from .constants import ExceptionConstants
 
 
 class CategoryNotFoundException(NotFoundException):
     """Category not found exception"""
-    default_detail = ExceptionConstants.CATEGORY_NOT_FOUND
+    def __init__(self, message='Category not found'):
+        super().__init__(message)
+
+class CategoryAlreadyExistsException(AlreadyExistsException):
+    def __init__(self, message='Category already exists'):
+        super().__init__(message)
 
 
 class CategoryNameExistsException(ConflictException):

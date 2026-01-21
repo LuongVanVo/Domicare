@@ -50,3 +50,9 @@ class ConflictException(BaseAPIException):
     status_code = status.HTTP_409_CONFLICT
     default_detail = 'Resource conflict.'
     default_code = 'conflict'
+
+class AlreadyExistsException(BaseAPIException):
+    """409 Already Exists"""
+    status_code = status.HTTP_409_CONFLICT
+    default_detail = 'Resource already exists.'
+    default_code = 'exists'

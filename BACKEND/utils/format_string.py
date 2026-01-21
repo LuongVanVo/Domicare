@@ -11,17 +11,33 @@ class FormatStringAccents:
     
     @staticmethod
     def remove_accents(text: str) -> str:
+        """
+            Remove Vietnamese accents from text for searching
+
+            Example:
+                "Dọn dẹp nhà cửa" -> "don dep nha cua"
+            """
         """Remove Vietnamese accents from string"""
         if not text:
             return text
         
         # Normalize to NFD (decomposed form)
-        nfkd = unicodedata.normalize('NFKD', text)
-        
-        # Filter out combining characters
-        result = ''.join([c for c in nfkd if not unicodedata.combining(c)])
-        
-        return result
+        nfd = unicodedata.normalize('NFD', text)
+
+        without_accents = ''.join(
+            char for char in nfd
+            if unicodedata.category(char) != 'Mn'
+        )
+
+        replacements = {
+            'đ': 'd', 'Đ': 'D',
+            'ð': 'd', 'Ð': 'D'
+        }
+
+        for old, new in replacements.items():
+            without_accents = without_accents.replace(old, new)
+
+        return without_accents.lower()
     
     @staticmethod
     def to_slug(text: str) -> str:
