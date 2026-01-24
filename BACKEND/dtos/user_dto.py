@@ -1,4 +1,4 @@
-﻿from typing import Optional, Set
+﻿from typing import List, Optional
 from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
 from dtos.role_dto import RoleDTO
@@ -21,7 +21,7 @@ class UserDTO(BaseModel):
     update_by: Optional[str] = Field(None, alias="updateBy")
     create_at: Optional[datetime] = Field(None, alias="createAt")
     update_at: Optional[datetime] = Field(None, alias="updateAt")
-    roles: Optional[Set[RoleDTO]] = None
+    roles: Optional[List[RoleDTO]] = []
 
     class Config:
         populate_by_name = True

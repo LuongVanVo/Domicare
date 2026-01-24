@@ -120,6 +120,7 @@ def get_category_by_id(request, category_id: int):
         ), status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
+@permission_classes([])
 def get_all_categories(request):
     """Get all categories with pagination and filtering"""
     try:
