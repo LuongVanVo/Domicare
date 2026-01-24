@@ -1,13 +1,15 @@
-import { role, User } from './user.interface'
+import { User } from './user.interface'
 
 // define the Login interface
 export interface LoginResponse {
-  accessToken: string
-  refreshToken: string
-  user: User
+  access_token: string
+  refresh_token: string
+  token_type?: string
+  user?: User
 }
 export interface SentEmailResponse {
   email?: string
+  message?: string
   token?: string
 }
 
@@ -15,9 +17,7 @@ export interface SentEmailResponse {
 export interface RegisterReponse {
   id?: number
   email?: string
-  password?: string
-  accessToken?: string
-  refreshToken?: string
-  roles?: role[]
-  emailConfirmed?: boolean
+  full_name?: string
+  message?: string
+  is_email_confirmed?: boolean
 }

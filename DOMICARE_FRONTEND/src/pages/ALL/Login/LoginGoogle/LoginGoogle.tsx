@@ -9,6 +9,7 @@ import { Toast } from '@/utils/toastMessage'
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
+import { path } from '@/core/constants/path'
 
 export default function LoginGoogle() {
   const { access_token, refresh_token } = useParamsString()
@@ -19,11 +20,50 @@ export default function LoginGoogle() {
   useEffect(() => {
     if (access_token && refresh_token && !processedRef.current) {
       processedRef.current = true
+      console.log('🔐 OAuth tokens received:', { access_token, refresh_token })
       setAccessTokenToLS(access_token as string)
       setRefreshTokenToLS(refresh_token as string)
+      console.log('💾 Tokens saved to localStorage')
       getMeMutation.mutate()
+      console.log('📡 Calling getMeMutation...')
     }
   }, [access_token, refresh_token])
+
+  useEffect(() => {
+    if (getMeMutation.isSuccess) {
+      console.log('✅ getMeMutation SUCCESS!')
+      console.log('👤 User data:', getMeMutation.data?.data.data)
+      Toast.success({ 
+        title: 'Thành công', 
+        description: 'Đăng nhập với Google thành công! 🚀⚡' 
+      })
+      setTimeout(() => {
+        console.log('🏠 Redirecting to home...')
+        navigate(path.home)
+      }, 500)
+    }
+  }, [getMeMutation.isSuccess, navigate])
+
+  useEffect(() => {
+    if (getMeMutation.isError) {
+      console.error('❌ getMeMutation ERROR:', getMeMutation.error)
+      Toast.error({ 
+        description: 'Không thể lấy thông tin người dùng. Vui lòng thử lại!' 
+      })
+      navigate(path.login)
+    }
+  }, [getMeMutation.isError, navigate])
+
+
+  // Xử lý khi getMeMutation bị lỗi
+  useEffect(() => {
+    if (getMeMutation.isError) {
+      Toast.error({ 
+        description: 'Không thể lấy thông tin người dùng. Vui lòng thử lại!' 
+      })
+      navigate(path.login)
+    }
+  }, [getMeMutation.isError, navigate])
 
   // xuly
   const { t } = useTranslation('auth')

@@ -8,6 +8,8 @@ urlpatterns = [
     path('refresh-token', auth_controller.refresh_token, name='refresh_token'),
     path('reset-password', auth_controller.reset_password, name='reset_password'),
     path('logout', auth_controller.logout, name='logout'),
+    # google oauth2
+    path('google/callback', auth_controller.google_oauth2_callback, name='google_oauth2_callback'),
 
     # email verification
     path('verify-email', auth_controller.verify_email, name='verify_email'),

@@ -1,5 +1,6 @@
 ﻿import logging
 from datetime import  timedelta
+from typing import Optional, Tuple
 from django.utils import timezone
 
 from django.contrib.auth.hashers import make_password
@@ -13,11 +14,14 @@ from dtos.auth.register_response import RegisterResponse
 from exceptions.auth_exceptions import InvalidEmailOrPassword, EmailNotConfirmedException, InvalidRefreshTokenException
 from exceptions.user_exceptions import UserNotFoundException, EmailAlreadyExistsException
 from mappers.user_mapper import UserMapper
+from models.user import User
 from repositories.token_repository import TokenRepository
 from repositories.user_repository import UserRepository
 from services.email_service import EmailService
 from services.jwt_service import JwtService
 import bcrypt
+import string
+import secrets
 
 logger = logging.getLogger(__name__)
 
@@ -128,20 +132,6 @@ class AuthService:
             message="Register successful. Please check your email to verify your account."
         )
 
-        # send verification email
-        try:
-            self.email_service.send_verification_email(email)
-        except Exception as e:
-            logger.error(f"[Auth] Failed to send verification email to {email}: {str(e)}")
-
-        logger.info(f"[Auth] User registered successfully with email: {email}")
-
-        return RegisterResponse(
-            id=user.id,
-            email=user.email,
-            message="Register successful. Please check your email to verify your account."
-        )
-
     # refresh token
     def refresh_token(self, request: RefreshTokenRequest) -> RefreshTokenResponse:
         refresh_token = request.refresh_token
@@ -221,3 +211,82 @@ class AuthService:
             "is_active": user.is_active,
             "is_email_confirmed": user.is_email_confirmed,
         }
+        
+    def generate_random_password(self, length: int = 20) -> str:
+        """Generate a random password of OAuth users"""
+        alphabet = string.ascii_letters + string.digits + string.punctuation
+        return ''.join(secrets.choice(alphabet) for _ in range(length))
+    
+    def handle_google_oauth2(
+        self, email: str, 
+        name: Optional[str] = None, 
+        picture: Optional[str] = None, 
+        locale: Optional[str] = None, 
+        google_id: Optional[str] = None) -> Tuple[str, str, User]:
+        """
+        Handle Google OAuth2 login or registration
+        Returns access token, refresh token, and user
+        """
+        if not email:
+            raise ValueError("Email is required for OAuth2 authentication")
+        
+        # Check if user exists
+        user = self.user_repo.find_by_email(email)
+        is_new_user = user is None
+        
+        if is_new_user:
+            logger.info(f"[OAuth2] Creating new user for email: {email} via Google OAuth2")
+            # Create new user
+            user = User(
+                email=email,
+                full_name=name or email.split('@')[0],
+                password=self.generate_random_password(),
+                google_id=google_id,
+                avatar=picture,
+                address=locale,
+                is_email_confirmed=True,
+                email_confirmation_token=None,
+                is_active=True,
+                is_deleted=False,
+            )
+            user.set_password(user.password)
+            self.user_repo.save(user)
+        else:
+            logger.info(f"[OAuth2] Updating existing user for email: {email} via Google OAuth2")
+            # Update existing user info
+            self._update_user_information(user, email, name, picture, locale, google_id)
+            self.user_repo.save(user)
+
+        # Generate tokens
+        access_token, refresh_token = self.jwt_service.create_tokens(user.email)
+        
+        # Save refresh token to DB
+        self.token_repo.create_token(
+            user=user,
+            refresh_token=refresh_token,
+            expiration=timezone.now() + timedelta(days=7)
+        )
+        
+        logger.info(f"[OAuth2] OAuth2 login successful for email: {email}")
+        return access_token, refresh_token, user
+    
+    def _update_user_information(self, user: User, email: str, name: Optional[str], picture: Optional[str], locale: Optional[str], google_id: Optional[str]) -> None:
+        if google_id and not user.google_id:
+            user.google_id = google_id
+        
+        # Confirm email and activate account
+        user.is_email_confirmed = True
+        user.email_confirmation_token = None
+        user.is_active = True
+        user.is_deleted = False
+        
+        # Update name if not set
+        if name and not user.full_name:
+            user.full_name = name
+        
+        # Update avatar if not set
+        if picture and not user.avatar:
+            user.avatar = picture
+        # Update address if not set
+        if locale and not user.address:
+            user.address = locale

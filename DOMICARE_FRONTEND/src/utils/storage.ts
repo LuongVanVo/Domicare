@@ -7,16 +7,16 @@ export const LocalStorageEventTarget = new EventTarget()
 
 const isBrowser = typeof window !== 'undefined'
 
-export const setAccessTokenToLS = (access_token: string) => {
-  Cookies.set('access_token', access_token, {
+export const setAccessTokenToLS = (token: string) => {
+  Cookies.set('access_token', token, {
     expires: 7, // 7 days
     secure: true,
     sameSite: 'strict'
   })
 }
 
-export const setRefreshTokenToLS = (refresh_token: string) => {
-  Cookies.set('refresh_token', refresh_token, {
+export const setRefreshTokenToLS = (token: string) => {
+  Cookies.set('refresh_token', token, {
     expires: 30, // 30 days
     secure: true,
     sameSite: 'strict'

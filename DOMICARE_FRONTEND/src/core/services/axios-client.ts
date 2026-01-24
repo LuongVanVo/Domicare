@@ -13,7 +13,8 @@ import axios, {
 import isEqual from 'lodash/isEqual'
 
 interface TokenResponse {
-  accessToken: string
+  access_token: string
+  refresh_token?: string
   email: string
 }
 
@@ -76,22 +77,22 @@ axiosClient.interceptors.response.use(
             return Promise.reject(error)
           }
 
-          const response = await axios.post<SuccessResponse<TokenResponse>>(`${config.baseUrl}/refresh-token`, {
-            refreshToken: refreshToken
+          const response = await axios.post<SuccessResponse<TokenResponse>>(`${config.baseUrl}/auth/refresh-token`, {
+            refresh_token: refreshToken
           })
 
           if (isEqual(response.status, HttpStatusCode.Ok)) {
-            const { accessToken } = response.data.data
+            const { access_token } = response.data.data
 
-            setAccessTokenToLS(accessToken)
+            setAccessTokenToLS(access_token)
 
-            axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
+            axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`
 
             if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${accessToken}`
+              originalRequest.headers.Authorization = `Bearer ${access_token}`
             }
 
-            onRefreshed(accessToken)
+            onRefreshed(access_token)
 
             isRefreshing = false
             return axiosClient(originalRequest)

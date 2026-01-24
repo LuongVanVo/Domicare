@@ -9,6 +9,7 @@ urlpatterns = [
     path('api/v1/health/', include('routes.health_routes')),
     path('api/v1/file/', include('routes.file_routes')),
     path('api/v1/category/', include('routes.category_routes')),
+    path('api/v1/users/', include('routes.user_routes')),
     
     # API Documentation
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

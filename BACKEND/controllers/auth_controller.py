@@ -1,5 +1,6 @@
 ﻿import json
 import logging
+import requests
 
 from django.conf import settings
 from django.http import JsonResponse
@@ -10,6 +11,7 @@ from pydantic import ValidationError
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
+from django.http import HttpResponseRedirect
 
 from dtos.auth.login_request import LoginRequest
 from dtos.auth.refresh_token_request import RefreshTokenRequest
@@ -205,3 +207,105 @@ def send_reset_password_email(request):
     except Exception as e:
         logger.error(f"[Controller] Send reset password email error: {e}")
         return JsonResponse(FormatRestResponse.error("Failed to send email"), status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def google_oauth2_callback(request):
+    """Handle Google OAuth2 callback"""
+    authorization_code = request.GET.get('code')
+    
+    if not authorization_code:
+        logger.error("[AuthController] No authorization code received from Google")
+        return HttpResponseRedirect(
+            f"{settings.FRONTEND_URL}/login?error=missing_authorization_code"
+        )
+    try:
+        token_response = exchange_code_for_token(authorization_code)
+        google_access_token = token_response.get('access_token')
+        
+        if not google_access_token:
+            logger.error("[AuthController] Failed to get access token from Google")
+            return HttpResponseRedirect(
+                f"{settings.FRONTEND_URL}/login?error=google_oauth2_token_failed"
+            )
+        
+        user_info = get_google_user_info(google_access_token)
+        
+        email = user_info.get('email')
+        name = user_info.get('name')
+        picture = user_info.get('picture')
+        locale = user_info.get('locale')
+        google_id = user_info.get('sub')
+        
+        if not email:
+            logger.error("[AuthController] Email not found in Google user info")
+            return HttpResponseRedirect(
+                f"{settings.FRONTEND_URL}/login?error=google_oauth2_no_email"
+            )
+        
+        access_token, refresh_token, user = auth_service.handle_google_oauth2(
+            email=email,
+            name=name,
+            picture=picture,
+            locale=locale,
+            google_id=google_id
+        )
+        
+        redirect_url = (
+            f"{settings.FRONTEND_URL}/"
+            f"?access_token={access_token}"
+            f"&refresh_token={refresh_token}"
+        )
+        
+        logger.info(f"[OAuth] Success - Redirecting to: {redirect_url[:80]}...")
+        return HttpResponseRedirect(redirect_url)
+    
+    except requests.RequestException as e:
+        logger.error(f"[AuthController] Request error: {str(e)}")
+        return HttpResponseRedirect(
+            f"{settings.FRONTEND_URL}/login?error=google_oauth2_request_failed"
+        )
+    except Exception as e:
+        logger.error(f"[AuthController] Exception during Google OAuth2 callback: {str(e)}")
+        return HttpResponseRedirect(
+            f"{settings.FRONTEND_URL}/login?error=processing_error"
+        )
+    
+def exchange_code_for_token(authorization_code: str) -> dict:
+    """Exchange authorization code for access token"""
+    data = {
+        'code': authorization_code,
+        'client_id': settings.GOOGLE_CLIENT_ID,
+        'client_secret': settings.GOOGLE_CLIENT_SECRET,
+        'redirect_uri': settings.GOOGLE_REDIRECT_URI,
+        'grant_type': 'authorization_code'
+    }
+    
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    
+    response = requests.post(
+        settings.GOOGLE_TOKEN_URL,
+        data=data,
+        headers=headers,
+        timeout=10
+    )
+    
+    response.raise_for_status()
+    return response.json()
+
+def get_google_user_info(access_token: str) -> dict:
+    """Get user info from Google API using access token"""
+    headers = {
+        'Authorization': f'Bearer {access_token}'
+    }
+    
+    response = requests.get(
+        settings.GOOGLE_USERINFO_URL,
+        headers=headers,
+        timeout=10
+    )
+    
+    response.raise_for_status()
+    return response.json()
