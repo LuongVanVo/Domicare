@@ -13,18 +13,59 @@ import { path } from '@/core/constants/path'
 import Comment from '@/components/Comment'
 import Category from '@/components/Category'
 import { Fragment } from 'react/jsx-runtime'
-import { useContext } from 'react'
+import { useContext, useEffect, useRef } from 'react'
 import { AppContext } from '@/core/contexts/app.context'
 import SectionBgGreen from '@/components/SectionBgGreen/SectionBgGreen'
 import SectionBgWhite from '@/components/SectionBgWhite/SectionBgWhite'
 import CountUp from 'react-countup'
 import { Clock, Smile, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useParamsString } from '@/hooks/usePrdQueryConfig'
+import { useGetMe } from '@/core/queries/user.query'
+import { setAccessTokenToLS, setRefreshTokenToLS } from '@/utils/storage'
+import { Toast } from '@/utils/toastMessage'
 
 const HomePage = () => {
   const { categories } = useContext(AppContext)
   const { t } = useTranslation(['home', 'common'])
   const navigate = useNavigate()
+  const { access_token, refresh_token } = useParamsString()
+  const getMeMutation = useGetMe()
+  const processedRef = useRef(false)
+
+  // Xử lý OAuth callback
+  useEffect(() => {
+    if (access_token && refresh_token && !processedRef.current) {
+      processedRef.current = true
+      console.log('🔐 OAuth tokens received in HomePage')
+      
+      setAccessTokenToLS(access_token as string)
+      setRefreshTokenToLS(refresh_token as string)
+      getMeMutation.mutate()
+    }
+  }, [access_token, refresh_token])
+
+  useEffect(() => {
+    if (getMeMutation.isSuccess) {
+      Toast.success({ 
+        title: 'Thành công', 
+        description: 'Đăng nhập với Google thành công! 🚀⚡' 
+      })
+      // Reload page để cập nhật context
+      setTimeout(() => {
+        window.location.href = '/'
+      }, 1000)
+    }
+  }, [getMeMutation.isSuccess])
+
+  useEffect(() => {
+    if (getMeMutation.isError) {
+      Toast.error({ 
+        description: 'Không thể lấy thông tin người dùng!' 
+      })
+    }
+  }, [getMeMutation.isError])
+  
   const handleBooking = () => {
     navigate({ pathname: path.products })
   }

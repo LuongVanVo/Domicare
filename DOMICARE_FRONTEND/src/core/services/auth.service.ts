@@ -3,12 +3,12 @@ import { LoginResponse, RegisterReponse, SentEmailResponse } from '@/models/inte
 import { SuccessResponse } from '@/models/interface/response.interface'
 import { LoginType } from '@/models/types/login.type'
 import { RegisterType } from '@/models/types/register.type'
-const API_LOGIN_URL = '/login'
-const API_LOGOUT_URL = '/out'
-const API_REGISTER_URL = '/register'
-const API_SENT_EMAIL_URL = '/email/verify'
-const API_RESET_PASS_URL = '/email/reset-password'
-const API_LOGIN_GOOGLE = '/auth/callback'
+const API_LOGIN_URL = '/auth/login'
+const API_LOGOUT_URL = '/auth/logout'
+const API_REGISTER_URL = '/auth/register'
+const API_SENT_EMAIL_URL = '/auth/email/verify'
+const API_RESET_PASS_URL = '/auth/email/reset-password'
+const API_LOGIN_GOOGLE = '/auth/google/callback'
 
 export const authApi = {
   login: (params: LoginType) => {
@@ -28,7 +28,7 @@ export const authApi = {
     })
   },
   logout: () => {
-    return axiosClient.get<SuccessResponse<null>>(API_LOGOUT_URL)
+    return axiosClient.post<SuccessResponse<null>>(API_LOGOUT_URL)
   },
   loginWithGG: (params: { code: string }) => {
     return axiosClient.get<SuccessResponse<LoginResponse>>(API_LOGIN_GOOGLE, { params })
