@@ -159,7 +159,7 @@ def upload_product_image(request):
 
         return JsonResponse(
             FormatRestResponse.success(
-                data=product.model_dump(),
+                data=product.model_dump(by_alias=True),
                 message="Product image uploaded successfully"),
             status=status.HTTP_200_OK
         )

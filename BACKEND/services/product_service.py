@@ -102,10 +102,10 @@ class ProductService:
             raise CategoryNotFoundException('Category not found')
 
         # Find product
-        product = self.product_repo.find_by_id(product_id)
+        product = self.product_repo.find_by_id_and_not_deleted(product_id)
         if not product:
             logger.error(f"[ProductService] Product with ID {product_id} not found")
-            raise ProductNameExistsException("Product not found")
+            raise ProductNotFoundException("Product not found")
 
         # Update category if changed
         if new_category_id != old_category_id:
@@ -272,8 +272,8 @@ class ProductService:
             discount=product.discount,
             priceAfterDiscount=product.price_after_discount,
             landingImages=product.landing_images,
-            categoryID=product.category_id,
-            reviewDTOs=None,
+            categoryId=product.category_id,
+            reviewDtos=None,
             create_by=product.create_by,
             update_by=product.update_by,
             create_at=product.create_at,
@@ -318,14 +318,14 @@ class ProductService:
                 image=product.category.image
             )
 
-            return ProductMini(
-                id=product.id,
-                name=product.name,
-                description=product.description,
-                price=product.price,
-                image=product.image,
-                ratingStar=product.overal_rating,
-                discount=product.discount,
-                priceAfterDiscount=product.price_after_discount,
-                categoryMini=category_mini
-            )
+        return ProductMini(
+            id=product.id,
+            name=product.name,
+            description=product.description,
+            price=product.price,
+            image=product.image,
+            ratingStar=product.overal_rating,
+            discount=product.discount,
+            priceAfterDiscount=product.price_after_discount,
+            categoryMini=category_mini
+        )
