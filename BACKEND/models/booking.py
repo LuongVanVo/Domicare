@@ -1,15 +1,16 @@
 """Booking Model"""
+from enum import Enum
+
 from django.db import models
 from .enums import BookingStatus
 from django.utils import timezone
-
 
 class Booking(models.Model):
     """Booking model - maps to BOOKINGS table"""
     id = models.BigAutoField(primary_key=True)
     address = models.TextField()
     note = models.TextField(blank=True, null=True)
-    is_perodic = models.BooleanField(default=False)
+    is_periodic = models.BooleanField(default=False)
     start_time = models.DateTimeField()
     phone = models.CharField(max_length=20)
     total_price = models.DecimalField(max_digits=15, decimal_places=2)

@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/v1/category/', include('routes.category_routes')),
     path('api/v1/users/', include('routes.user_routes')),
     path('api/v1/product/', include('routes.product_routes')),
+    path('api/v1/reviews/', include('routes.review_routes')),
     
     # API Documentation
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
