@@ -1,5 +1,5 @@
 """Product Exceptions"""
-from .base import NotFoundException, ConflictException, BadRequestException
+from .base import NotFoundException, ConflictException, BadRequestException, ValidationException
 from .constants import ExceptionConstants
 
 
@@ -16,3 +16,8 @@ class ProductNameExistsException(ConflictException):
 class ProductDeletedException(BadRequestException):
     """Product deleted exception"""
     default_detail = ExceptionConstants.PRODUCT_DELETED
+
+class UrlAlreadyExistsException(ValidationException):
+    """Exception raised when URL already exists"""
+    def __init__(self, message: str = 'URL already exists'):
+        super().__init__(message)

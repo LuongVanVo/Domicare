@@ -2,7 +2,6 @@
 import unicodedata
 import re
 
-
 class FormatStringAccents:
     """
     Format string utilities for Vietnamese text
