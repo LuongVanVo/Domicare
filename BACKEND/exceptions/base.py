@@ -56,3 +56,9 @@ class AlreadyExistsException(BaseAPIException):
     status_code = status.HTTP_409_CONFLICT
     default_detail = 'Resource already exists.'
     default_code = 'exists'
+
+class ValidationException(BaseAPIException):
+    """422 Unprocessable Entity"""
+    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    default_detail = 'Validation error.'
+    default_code = 'validation_error'

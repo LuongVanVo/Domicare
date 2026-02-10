@@ -1,4 +1,5 @@
 """Product Model"""
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils import timezone
 
@@ -14,7 +15,12 @@ class Product(models.Model):
     image = models.URLField(blank=True, null=True)
     is_deleted = models.BooleanField(default=False)
     overal_rating = models.FloatField(default=0.0)
-    landing_images = models.JSONField(blank=True, null=True)
+    landing_images = ArrayField(
+        models.URLField(max_length=500),
+        blank=True,
+        null=True,
+        default=list
+    )
 
     category = models.ForeignKey(
         'Category',
@@ -53,6 +59,7 @@ class Product(models.Model):
 
         super().save(*args, **kwargs)
 
+    @property
     def calculate_rating_star(self):
         """Matches calculateRatingStar() method"""
         reviews = self.reviews.all()
@@ -63,7 +70,8 @@ class Product(models.Model):
         calculated_rating = total_rating / len(reviews)
         return round(calculated_rating, 2)
 
-    def get_price_after_discount(self):
+    @property
+    def price_after_discount(self):
         """Matches getPriceAfterDiscount() method"""
         discount_amount = float(self.price) * (float(self.discount) / 100)
         return float(self.price) - discount_amount
