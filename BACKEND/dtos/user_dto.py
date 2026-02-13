@@ -14,6 +14,7 @@ class UserDTO(BaseModel):
     google_id: Optional[str] = Field(None, alias="googleId")
     gender: Optional[str] = None
     is_active: Optional[bool] = Field(True, alias="isActive")
+    is_delete: Optional[bool] = Field(False, alias="isDelete")
     date_of_birth: Optional[datetime] = Field(None, alias="dateOfBirth")
     is_email_confirmed: bool = Field(False, alias="isEmailConfirmed")
     email_confirmation_token: Optional[str] = Field(None, alias="emailConfirmationToken")

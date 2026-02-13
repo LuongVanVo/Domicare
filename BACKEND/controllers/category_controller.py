@@ -1,7 +1,5 @@
 ﻿import json
 import logging
-
-from django.core.serializers import serialize
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from jsonschema.exceptions import ValidationError

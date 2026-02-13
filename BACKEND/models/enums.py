@@ -17,12 +17,12 @@ class Gender(str, Enum):
 
 class BookingStatus(str, Enum):
     """Booking status enumeration"""
-    PENDING = "pending"
-    ACCEPTED = "accepted"
-    REJECTED = "rejected"
-    CANCELLED = "canceled"
-    FAILED = "failed"
-    SUCCESS = "success"
+    PENDING = "PENDING"
+    ACCEPTED = "ACCEPTED"
+    REJECTED = "REJECTED"
+    CANCELLED = "CANCELLED"
+    FAILED = "FAILED"
+    SUCCESS = "SUCCESS"
 
     @classmethod
     def choices(cls):

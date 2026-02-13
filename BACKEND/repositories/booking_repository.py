@@ -168,29 +168,61 @@ class BookingRepository:
 
     @staticmethod
     def find_all_paginated(
-        page: int = 1,
-        page_size: int = 20,
-        user_id: Optional[int] = None,
-        status: Optional[BookingStatus] = None,
-        sort_by: str = 'id',
-        sort_direction: str = 'desc',
+            page: int = 1,
+            page_size: int = 20,
+            user_id: Optional[int] = None,
+            sale_id: Optional[int] = None,
+            booking_status: Optional[str] = None,  # ← String thay vì BookingStatus
+            other_booking_status: Optional[str] = None,  # ← THÊM: cho OR condition
+            search_name: Optional[str] = None,  # ← THÊM: search by customer name
+            sort_by: str = 'create_at',
+            sort_direction: str = 'desc'
     ) -> Tuple[List[Booking], int]:
-        """Find all bookings with pagination and filtering"""
+        """
+        Find all bookings with pagination and complex filtering
+
+        Filters:
+        - user_id: Filter by customer user ID
+        - sale_id: Filter by sale user ID
+        - booking_status: Filter by status (PENDING, ACCEPTED, etc.)
+        - other_booking_status: Secondary status for OR condition
+        - search_name: Search by customer name (name_unsigned field)
+        """
+        # Base queryset with eager loading
         queryset = Booking.objects.select_related('user', 'sale_user').prefetch_related('products').all()
 
-        # Filter by user
-        if user_id:
+        # Filter by user (customer)
+        if user_id and user_id > 0:
             queryset = queryset.filter(user_id=user_id)
 
-        # Filter by status
-        if status:
-            queryset = queryset.filter(status=status)
+        # Filter by sale user
+        if sale_id and sale_id > 0:
+            queryset = queryset.filter(sale_user_id=sale_id)
+
+        # Filter by booking status (with OR logic if other_booking_status provided)
+        if booking_status:
+            if other_booking_status:
+                # OR condition: status = A OR status = B
+                queryset = queryset.filter(
+                    Q(booking_status=booking_status.upper()) |
+                    Q(booking_status=other_booking_status.upper())
+                )
+            else:
+                # Single status filter
+                queryset = queryset.filter(booking_status=booking_status.upper())
+
+        # Search by customer name (using name_unsigned field)
+        if search_name and search_name.strip():
+            from utils.format_string import remove_accents
+            clean_search_name = remove_accents(search_name.lower().strip())
+            # Search in User's name_unsigned field
+            queryset = queryset.filter(user__name_unsigned__icontains=clean_search_name)
 
         # Sorting
         sort_field = sort_by if sort_direction == 'asc' else f'-{sort_by}'
         queryset = queryset.order_by(sort_field)
 
-        # Get total count
+        # Get total count BEFORE pagination
         total = queryset.count()
 
         # Pagination

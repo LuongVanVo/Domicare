@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Email xác nhận tiếp nhận</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #eaeaea;
+        padding: 50px 15px;
+      }
+
+      .email-container {
+        background-color: #ffffff;
+        max-width: 620px;
+        margin: auto;
+        padding: 35px 30px;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        border: 1px solid #ddd;
+      }
+
+      .logo {
+        margin-bottom: 20px;
+      }
+
+      .logo img {
+        width: 75px;
+        height: auto;
+        display: inline-block;
+      }
+
+      h2 {
+        color: #2e7d32;
+        font-size: 24px;
+        margin-top: 10px;
+      }
+
+      .content {
+        text-align: left;
+        margin-top: 25px;
+        line-height: 1.7;
+        color: #333;
+      }
+
+      .btn-container {
+        text-align: center;
+        margin-top: 30px;
+      }
+
+      .btn {
+        display: inline-block;
+        background-color: #4da6ff;
+        color: #ffffff;
+        padding: 12px 26px;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+      }
+
+      .btn:hover {
+        background-color: #3399ff;
+      }
+      .footer {
+        margin-top: 40px;
+        font-size: 13px;
+        color: #999;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="logo">
+        <img src="{{ logo_url }}" alt="DomiCare Logo" />
+      </div>
+
+      <h2>DỊCH VỤ ĐÃ ĐƯỢC TIẾP NHẬN</h2>
+
+      <div class="content">
+        <p>Xin chào <strong>{{ user_name }}</strong>,</p>
+
+        <p>Chúng tôi xin xác nhận rằng yêu cầu đăng ký dịch vụ <strong>{{ service_name }}</strong> của bạn vào ngày <strong>{{ booking_date }}</strong> đã được <span style="color: #2e7d32;"><strong>tiếp nhận thành công</strong></span>.</p>
+
+        <p>Một nhân viên của chúng tôi sẽ sớm liên hệ với bạn để xác nhận chi tiết và hỗ trợ thêm.</p>
+        <p>Xin cảm ơn bạn đã tin tưởng sử dụng DomiCare.</p>
+      </div>
+
+      <div class="btn-container">
+        <a href="{{ frontend_url }}" class="btn">Truy cập DomiCare</a>
+      </div>
+
+      <p class="footer">
+        © 2025 DomiCare. Email này được gửi tự động – vui lòng không trả lời.
+      </p>
+    </div>
+  </body>
+</html>

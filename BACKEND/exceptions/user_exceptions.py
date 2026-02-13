@@ -1,5 +1,5 @@
 """User Exceptions"""
-from .base import NotFoundException, ConflictException, BadRequestException
+from .base import NotFoundException, ConflictException, BadRequestException, ValidationException
 from .constants import ExceptionConstants
 
 
@@ -31,3 +31,13 @@ class UserDeletedException(BadRequestException):
     """User deleted exception"""
     def __init__(self, detail="Người dùng đã bị xóa."):
         super().__init__(detail=detail)
+
+class DeleteAdminException(ValidationException):
+    """Cannot delete admin user exception"""
+    def __init__(self, message: str = "Cannot delete an ADMIN account"):
+        super().__init__(message)
+
+class NotMatchPasswordException(ValidationException):
+    """Password mismatch exception"""
+    def __init__(self, message: str = "Password does not match"):
+        super().__init__(message)

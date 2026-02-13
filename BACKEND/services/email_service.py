@@ -78,3 +78,63 @@ class EmailService:
         )
 
         logger.info(f"[EmailService] Reset password email sent to {email}")
+
+    def send_password_to_user(self, email: str, name: str, password: str):
+        """Send random password to guest user"""
+        subject = '[DOMICARE] - MẬT KHẨU TÀI KHOẢN CỦA BẠN'
+        context = {
+            'name': name,
+            'email': email,
+            'password': password,
+            'frontend_url': self.frontend_url,
+            'logo_url': self.logo_url
+        }
+        html_message = render_to_string('emails/guest_password.html', context)
+        send_mail(
+            subject=subject,
+            message='',
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[email],
+            html_message=html_message,
+            fail_silently=False
+        )
+
+    def send_accepted_to_user(self, email: str, product_name: str, booking_date: str, customer_name: str):
+        """Send email when booking is accepted"""
+        subject = '[DOMICARE] - ĐƠN HÀNG ĐÃ ĐƯỢC CHẤP NHẬN'
+        context = {
+            'customer_name': customer_name,
+            'product_name': product_name,
+            'booking_date': booking_date,
+            'frontend_url': self.frontend_url,
+            'logo_url': self.logo_url
+        }
+        html_message = render_to_string('emails/booking_accepted.html', context)
+        send_mail(
+            subject=subject,
+            message='',
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+
+    def send_reject_to_user(self, email: str, product_name: str, booking_date: str, customer_name: str):
+        """Send email when booking is rejected"""
+        subject = '[DOMICARE] - ĐƠN HÀNG ĐÃ BỊ TỪ CHỐI'
+        context = {
+            'customer_name': customer_name,
+            'product_name': product_name,
+            'booking_date': booking_date,
+            'frontend_url': self.frontend_url,
+            'logo_url': self.logo_url
+        }
+        html_message = render_to_string('emails/booking_rejected.html', context)
+        send_mail(
+            subject=subject,
+            message='',
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[email],
+            html_message=html_message,
+            fail_silently=False,
+        )
