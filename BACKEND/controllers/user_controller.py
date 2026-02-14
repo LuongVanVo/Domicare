@@ -106,7 +106,7 @@ def get_user_by_id(request, user_id):
 
         return JsonResponse(
             FormatRestResponse.success(
-                data=user_dto.model_dump(),
+                data=user_dto.to_dict(),
                 message="User fetched successfully."
             ),
             status=http_status.HTTP_200_OK

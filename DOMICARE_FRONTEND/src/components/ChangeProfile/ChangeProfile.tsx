@@ -75,18 +75,29 @@ export default function Profile() {
         data.imageId = avatarRes.data.data.id
         setFile(undefined)
       }
-      // submit form
+      
       const dataApi = {
         ...data,
-        dateOfBirth: data.dateOfBirth?.toISOString()
+        dateOfBirth: data.dateOfBirth 
+          ? formatDateToYYYYMMDD(data.dateOfBirth)
+          : undefined
       }
+      
       await userUpdateMutation.mutateAsync(dataApi as UserUpdateRequest)
       refetch()
     } catch {
       Toast.error({ description: 'Lỗi không xác định.' })
     }
-    // upload avatar
   }
+  
+  // Helper function
+  const formatDateToYYYYMMDD = (date: Date): string => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
   return (
     <Fragment>
       {isLoading ? (

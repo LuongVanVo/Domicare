@@ -2,7 +2,7 @@ import axiosClient from '@/core/services/axios-client'
 import { SuccessResponse } from '@/models/interface/response.interface'
 import { Review, ReviewRequest } from '@/models/interface/review.interface'
 
-const API_REVIEW_URL = '/api/reviews'
+const API_REVIEW_URL = '/reviews/'
 
 export const reviewApi = {
   post: (params: ReviewRequest) => {

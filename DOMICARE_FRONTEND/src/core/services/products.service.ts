@@ -2,8 +2,8 @@ import { Product, ProductListConfig, ProductRequest, ProductResponse } from '@/m
 import axiosClient from './axios-client'
 import { SuccessResponse } from '@/models/interface/response.interface'
 
-const API_PRODUCT_URL = '/api/products'
-const API_PRODUCT_PUBLIC_URL = '/api/public/products'
+const API_PRODUCT_URL = '/product'
+const API_PRODUCT_PUBLIC_URL = '/product/public'
 
 export const productApi = {
   get: (params: ProductListConfig) => {

@@ -17,19 +17,19 @@ export const userApi = {
     return axiosClient.get<SuccessResponse<UserResponse>>(API_USER_URL, { params })
   },
   delete: (id: number) => {
-    return axiosClient.delete<SuccessResponse<null>>(`${API_USER_URL}/${id}`)
+    return axiosClient.delete<SuccessResponse<null>>(`${API_USER_URL}/${id}/delete`)
   },
   update: (user: UserUpdateRequest) => {
-    return axiosClient.put<SuccessResponse<User>>(API_USER_URL, user)
+    return axiosClient.patch<SuccessResponse<User>>(`${API_USER_URL}/update `, user)
   },
   getById: (id: number) => {
     return axiosClient.get<SuccessResponse<User>>(`${API_USER_URL}/${id}`)
   },
   addRole: (params: roleAddRequest) => {
-    return axiosClient.put<SuccessResponse<any>>(`${API_USER_URL}/roles`, params)
+    return axiosClient.patch<SuccessResponse<any>>(`${API_USER_URL}/update/roles`, params)
   },
   add: (user: UserRequest) => {
-    return axiosClient.post<SuccessResponse<UserResponse>>(API_USER_URL, user)
+    return axiosClient.post<SuccessResponse<UserResponse>>(`${API_USER_URL}/admin`, user)
   },
   getMe: () => {
     return axiosClient.get<SuccessResponse<User>>(API_GET_ME_URL)

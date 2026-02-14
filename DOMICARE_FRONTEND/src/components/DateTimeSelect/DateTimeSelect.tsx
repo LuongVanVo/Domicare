@@ -19,22 +19,40 @@ export default function DateTimeSelect({ onChange, value, errorMessage }: DateSe
     year: 2000
   })
 
+  // Helper function để check valid date
+  const isValidDate = (d: Date | undefined): d is Date => {
+    return d instanceof Date && !isNaN(d.getTime())
+  }
+
   useEffect(() => {
-    if (value) {
-      setDate({ day: value.getDate(), month: value?.getMonth(), year: value?.getFullYear() })
+    if (isValidDate(value)) {
+      setDate({ 
+        day: value.getDate(), 
+        month: value.getMonth(), 
+        year: value.getFullYear() 
+      })
     }
   }, [value])
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    //  lay gia tri cua event
     const { value, name } = event.target
+    const numValue = Number(value)
+    
+    // Kiểm tra nếu conversion thất bại
+    if (isNaN(numValue)) {
+      console.error('Invalid number value:', value)
+      return
+    }
+    
     const newDate = {
       ...date,
-      [name]: value
+      [name]: numValue
     }
-    setDate(newDate) // set date moi
+    
+    setDate(newDate)
     onChange?.(new Date(newDate.year, newDate.month, newDate.day))
   }
+  
   return (
     <Fragment>
       <div className='flex flex-nowrap mt-1 mb-0'>
@@ -42,7 +60,7 @@ export default function DateTimeSelect({ onChange, value, errorMessage }: DateSe
           <select
             onChange={handleChange}
             name='day'
-            value={value?.getDate() || date.day}
+            value={isValidDate(value) ? value.getDate() : date.day}
             className={classNames(
               'w-[33%] border text-sm focus:outline-none rounded-md text-black h-10 mo:p-2 border-[#e2e2e2]  hover:border-main cursor-pointer',
               { 'border-red-500 text-red-500': errorMessage }
@@ -55,10 +73,11 @@ export default function DateTimeSelect({ onChange, value, errorMessage }: DateSe
               </option>
             ))}
           </select>
+          
           <select
             name='month'
             onChange={handleChange}
-            value={value?.getMonth() || date.month}
+            value={isValidDate(value) ? value.getMonth() : date.month}
             className={classNames(
               'w-[30%] border text-sm focus:outline-none rounded-md text-black h-10 mo:p-2 border-[#e2e2e2]  hover:border-main cursor-pointer',
               { 'border-red-500 text-red-500': errorMessage }
@@ -71,17 +90,18 @@ export default function DateTimeSelect({ onChange, value, errorMessage }: DateSe
               </option>
             ))}
           </select>
+          
           <select
             name='year'
             onChange={handleChange}
-            value={value?.getFullYear() || date.year}
+            value={isValidDate(value) ? value.getFullYear() : date.year}
             className={classNames(
               'w-[30%] border text-sm focus:outline-none rounded-md text-black h-10 mo:p-2 border-[#e2e2e2]  hover:border-main cursor-pointer',
               { 'border-red-500 text-red-500': errorMessage }
             )}
           >
             <option disabled>Năm</option>
-            {range(1910, 2025).map((item, index) => (
+            {range(1910, 2030).map((item, index) => (
               <option value={item} key={index} className='text-center'>
                 {item}
               </option>

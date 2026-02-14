@@ -11,7 +11,7 @@ from dtos.requests.add_user_by_admin_request import AddUserByAdminRequest
 from dtos.requests.update_role_for_user_request import UpdateRoleForUserRequest
 from dtos.requests.update_user_request import UpdateUserRequest
 from dtos.user_dto import UserDTO
-from exceptions.base import NotFoundException
+from exceptions.base import NotFoundException, ValidationException
 from exceptions.user_exceptions import EmailAlreadyExistsException, UserNotFoundException, DeleteAdminException, \
     NotMatchPasswordException
 from mappers.user_mapper import UserMapper
@@ -303,15 +303,24 @@ class UserService:
         if user_request.new_password:
             if not user_request.old_password:
                 logger.error(f"[UserService] Password update failed - old password not provided for user ID: {user_id}")
-                raise NotMatchPasswordException("Old password is required to set a new password.")
+                raise NotMatchPasswordException("Vui lòng nhập mật khẩu cũ để thay đổi mật khẩu.")
 
-            if check_password(user_request.old_password, user.password):
-                user.password = make_password(user_request.new_password)
+            if user_request.new_password != user_request.confirm_password:
+                raise ValidationException("Mật khẩu xác nhận không khớp.")
+
+            if user_request.new_password == user_request.old_password:
+                raise ValidationException("Mật khẩu mới không được trùng với mật khẩu cũ.")
+
+            if bcrypt.checkpw(user_request.old_password.encode('utf-8'), user.password.encode('utf-8')):
+                # user.password = make_password(user_request.new_password)
+                salt = bcrypt.gensalt(rounds=12)
+                user.password = bcrypt.hashpw(user_request.new_password.encode('utf-8'), salt).decode('utf-8')
                 logger.debug(f"[UserService] Updated password for user ID: {user_id}")
                 has_changes = True
             else:
-                logger.error(f"[UserService] Password update failed - old password does not match for user ID: {user_id}")
-                raise NotMatchPasswordException("Old password does not match.")
+                logger.error(
+                    f"[UserService] Password update failed - old password does not match for user ID: {user_id}")
+                raise NotMatchPasswordException("Mật khẩu cũ không chính xác.")
 
         # Update avatar
         if user_request.image_id:

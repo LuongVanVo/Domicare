@@ -116,10 +116,10 @@ def get_all_products(request):
         # Parse query parameters
         page = int(request.query_params.get('page', 1))
         size = int(request.query_params.get('size', 20))
-        category_id = int(request.query_params.get('category_id', 0))
-        search_name = request.query_params.get('search_name', None)
-        sort_by = request.query_params.get('sort_by', 'id')
-        sort_direction = request.query_params.get('sort_direction', 'asc')
+        category_id = int(request.query_params.get('categoryId', 0))
+        search_name = request.query_params.get('searchName', None)
+        sort_by = request.query_params.get('sortBy', 'id')
+        sort_direction = request.query_params.get('sortDirection', 'asc')
 
         if category_id == 0:
             category_id = None

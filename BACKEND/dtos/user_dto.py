@@ -27,3 +27,7 @@ class UserDTO(BaseModel):
     class Config:
         populate_by_name = True
         from_attributes = True # For ORM compatibility
+
+    def to_dict(self) -> dict:
+        """Convert to dict with camelCase keys"""
+        return self.model_dump(by_alias=True, exclude_none=False)

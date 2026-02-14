@@ -30,10 +30,10 @@ class UserMapper:
             address=user.address,
             avatar=user.avatar,
             gender=user.gender,
-            dateOfBirth=user.date_of_birth,
+            date_of_birth=user.date_of_birth,
             isEmailConfirmed=user.is_email_confirmed,
-            isActive=user.is_active,
-            isDelete=user.is_deleted,
+            is_active=user.is_active,
+            is_deleted=user.is_deleted,
             roles=roles_list
         )
 

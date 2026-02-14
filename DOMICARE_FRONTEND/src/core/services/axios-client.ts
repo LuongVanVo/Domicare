@@ -1,7 +1,7 @@
 import config from '@/configs'
 
 import { SuccessResponse } from '@/models/interface/response.interface'
-import { clearLS, getAccessTokenFromLS, getRefreshTokenFromLS, setAccessTokenToLS } from '@/utils/storage'
+import { clearLS, getAccessTokenFromLS, getRefreshTokenFromLS, setAccessTokenToLS, setRefreshTokenToLS } from '@/utils/storage'
 import axios, {
   AxiosError,
   AxiosInstance,
@@ -63,8 +63,27 @@ axiosClient.interceptors.response.use(
   },
   async (error: AxiosError): Promise<AxiosError> => {
     const originalRequest = error.config as ExtendedAxiosRequestConfig
+    const errorMessage = (error.response?.data as any)?.message?.toLowerCase() || ''
 
-    if (error.response && isEqual(error.response.status, HttpStatusCode.Unauthorized) && !originalRequest._retry) {
+    console.log('🔴 API Error:', {
+      url: originalRequest?.url,
+      status: error.response?.status,
+      message: (error.response?.data as any)?.message
+    })
+
+    if (!originalRequest) {
+      return Promise.reject(error)
+    }
+
+    const isUnauthorized = error.response?.status === 401
+    const isForbidden = error.response?.status === 403
+    const isTokenExpired = errorMessage.includes('expired') || errorMessage.includes('token')
+    
+    if (
+      error.response && 
+      (isUnauthorized || (isForbidden && isTokenExpired)) && 
+      !originalRequest._retry
+    ) {
       if (!isRefreshing) {
         originalRequest._retry = true
         isRefreshing = true
@@ -73,18 +92,25 @@ axiosClient.interceptors.response.use(
           const refreshToken = getRefreshTokenFromLS()
 
           if (!refreshToken) {
+            isRefreshing = false
             logout()
             return Promise.reject(error)
           }
 
-          const response = await axios.post<SuccessResponse<TokenResponse>>(`${config.baseUrl}/auth/refresh-token`, {
-            refresh_token: refreshToken
-          })
+
+          const response = await axios.post<SuccessResponse<TokenResponse>>(
+            `${config.baseUrl}/auth/refresh-token`,
+            { refresh_token: refreshToken }
+          )
 
           if (isEqual(response.status, HttpStatusCode.Ok)) {
-            const { access_token } = response.data.data
+            const { access_token, refresh_token } = response.data.data
 
             setAccessTokenToLS(access_token)
+            
+            if (refresh_token) {
+              setRefreshTokenToLS(refresh_token)
+            }
 
             axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`
 
@@ -96,21 +122,28 @@ axiosClient.interceptors.response.use(
 
             isRefreshing = false
             return axiosClient(originalRequest)
+          } else {
+            isRefreshing = false
+            logout()
+            return Promise.reject(error)
           }
         } catch (refreshError) {
           isRefreshing = false
-
           logout()
           return Promise.reject(refreshError)
         }
       } else {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
           addSubscriber((token: string) => {
             if (originalRequest.headers) {
               originalRequest.headers.Authorization = `Bearer ${token}`
             }
             resolve(axiosClient(originalRequest))
           })
+          
+          setTimeout(() => {
+            reject(new Error('Refresh token timeout'))
+          }, 10000)
         })
       }
     }
@@ -120,8 +153,10 @@ axiosClient.interceptors.response.use(
 )
 
 const logout = (): void => {
+  console.log('🚪 Logging out...')
   clearLS()
-  window.location.reload()
+  window.dispatchEvent(new CustomEvent('auth:logout'))
+  window.location.replace('/login')
 }
 
 export default axiosClient

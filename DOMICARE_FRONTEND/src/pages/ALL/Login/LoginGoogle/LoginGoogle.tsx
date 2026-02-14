@@ -10,6 +10,7 @@ import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { path } from '@/core/constants/path'
+import { rolesCheck } from '@/utils/rolesCheck'
 
 export default function LoginGoogle() {
   const { access_token, refresh_token } = useParamsString()
@@ -30,7 +31,8 @@ export default function LoginGoogle() {
   }, [access_token, refresh_token])
 
   useEffect(() => {
-    if (getMeMutation.isSuccess) {
+    if (getMeMutation.isSuccess && getMeMutation.data) {
+      const userData = getMeMutation.data.data.data
       console.log('✅ getMeMutation SUCCESS!')
       console.log('👤 User data:', getMeMutation.data?.data.data)
       Toast.success({ 
@@ -39,7 +41,11 @@ export default function LoginGoogle() {
       })
       setTimeout(() => {
         console.log('🏠 Redirecting to home...')
-        navigate(path.home)
+        if (rolesCheck.isAdminOrSale(userData.roles || [])) {
+          navigate(path.admin.dashboard)
+        } else {
+          navigate(path.home)
+        }
       }, 500)
     }
   }, [getMeMutation.isSuccess, navigate])

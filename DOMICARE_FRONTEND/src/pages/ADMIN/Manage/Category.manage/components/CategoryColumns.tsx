@@ -67,8 +67,9 @@ export const useCategoryColumns = (): ColumnDef<Category>[] => {
         className: cn('flex justify-center')
       },
       cell: ({ row }) => {
-        const length = (row.getValue('products') as Product[]).length
-        return <div className=' text-center'>{length}</div>
+        const products = row.getValue('products') as Product[] | null
+        const length = products?.length || 0
+        return <div className='text-center'>{length}</div>
       }
     },
     {

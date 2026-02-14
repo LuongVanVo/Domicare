@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from jsonschema.exceptions import ValidationError
 from rest_framework.decorators import permission_classes, api_view
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status as http_status
 
 from dtos.requests.add_category_request import AddCategoryRequest
@@ -118,7 +118,7 @@ def get_category_by_id(request, category_id: int):
         ), status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
-@permission_classes([])
+@permission_classes([AllowAny])
 def get_all_categories(request):
     """Get all categories with pagination and filtering"""
     try:

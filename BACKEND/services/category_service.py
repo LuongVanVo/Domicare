@@ -1,5 +1,5 @@
 ﻿import logging
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Union
 
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -147,7 +147,7 @@ class CategoryService:
         page_obj = paginator.get_page(page)
 
         # Convert to DTOs
-        categories = [self._convert_to_dto(cat) for cat in page_obj.object_list]
+        categories = [self._convert_to_dto(cat, include_products=True) for cat in page_obj.object_list]
 
         # Result
         result = {
@@ -170,13 +170,23 @@ class CategoryService:
             logger.error(f"[Category] Category with name {category_name} already exists.")
             raise CategoryAlreadyExistsException(f"Category with name {category_name} already exists.")
 
-    def _set_image_for_category(self, category: Category, image_id: int) -> None:
-        """Set image url for category from file repository"""
-        file_obj = self.file_repo.find_by_id(image_id)
-        if not file_obj:
-            logger.error(f"[Category] Image not found with ID: {image_id}")
-            raise FileNotFoundException(f"Image with ID {image_id} not found.")
-        category.image = file_obj.url
+    def _set_image_for_category(self, category: Category, image_id: Union[int, str]) -> None:
+        """Set image url for category from file repository or direct URL"""
+        # Nếu là URL string (http/https), dùng trực tiếp
+        if isinstance(image_id, str):
+            if image_id.startswith('http://') or image_id.startswith('https://'):
+                category.image = image_id
+                logger.info(f"[Category] Set image URL directly: {image_id}")
+            else:
+                raise ValueError("Invalid image URL format")
+        # Nếu là ID integer, lấy từ file repository
+        else:
+            file_obj = self.file_repo.find_by_id(image_id)
+            if not file_obj:
+                logger.error(f"[Category] Image not found with ID: {image_id}")
+                raise FileNotFoundException(f"Image with ID {image_id} not found.")
+            category.image = file_obj.url
+            logger.info(f"[Category] Set image from file ID: {image_id}")
 
     def _update_category_name(self, category: Category, new_name: str, category_id: int) -> None:
         """Update category name with uniqueness validation"""
@@ -200,9 +210,22 @@ class CategoryService:
         self.product_repo.soft_delete_by_ids(product_ids)
         logger.info(f"[Category] Soft deleted {len(product_ids)} products for category ID: {category.id}")
 
-    @staticmethod
-    def _convert_to_dto(category: Category) -> CategoryDTO:
+    def _convert_to_dto(self, category: Category, include_products: bool = False) -> CategoryDTO:
         """Convert Category model to CategoryDTO"""
+        products = None
+
+        if include_products:
+            product_list = self.product_repo.find_by_category_id_and_not_deleted(category.id)
+            products = [
+                {
+                    'id': p.id,
+                    'name': p.name,
+                    'description': p.description,
+                    'price': float(p.price) if hasattr(p, 'price') else None,
+                    'image': p.image if hasattr(p, 'image') else None,
+                }
+                for p in product_list
+            ]
         return CategoryDTO(
             id=category.id,
             name=category.name,
@@ -211,5 +234,6 @@ class CategoryService:
             create_by=str(category.create_by),
             update_by=str(category.update_by),
             create_at=category.create_at,
-            update_at=category.update_at
+            update_at=category.update_at,
+            products=products
         )
