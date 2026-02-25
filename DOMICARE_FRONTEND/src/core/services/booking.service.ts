@@ -32,7 +32,7 @@ export const bookingApi = {
     return axiosClient.delete<SuccessResponse<null>>(`${API_BOOKING_URL}${id}`)
   },
   edit: (data: BookingUpdateRequest) => {
-    return axiosClient.patch<SuccessResponse<BookingResponse>>(API_BOOKING_URL, data)
+    return axiosClient.patch<SuccessResponse<BookingResponse>>(`${API_BOOKING_URL}update`, data)
   },
   updateStatus: (data: BookingUpdateRequest) => {
     return axiosClient.patch<SuccessResponse<BookingResponse>>(API_BOOKING_STATUS_URL, data)

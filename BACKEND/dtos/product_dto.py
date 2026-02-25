@@ -12,12 +12,12 @@ class ProductDTO(BaseModel):
     discount: Optional[float] = None
     price_after_discount: Optional[float] = Field(None, alias='priceAfterDiscount')
     landing_images: Optional[List[str]] = Field(None, alias='landingImages')
-    category_id: Optional[int] = Field(None, alias='categoryId')
-    review_dtos: Optional[List[dict]] = Field(None, alias='reviewDtos')
-    create_by: Optional[str] = None
-    update_by: Optional[str] = None
-    create_at: Optional[datetime] = None
-    update_at: Optional[datetime] = None
+    category_id: Optional[int] = Field(None, alias='categoryID')
+    review_dtos: Optional[List[dict]] = Field(None, alias='reviewDTOs')
+    create_by: Optional[str] = Field(None, alias='createBy')
+    update_by: Optional[str] = Field(None, alias='updateBy')
+    create_at: Optional[datetime] = Field(None, alias='createAt')
+    update_at: Optional[datetime] = Field(None, alias='updateAt')
 
     class Config:
         from_attributes = True
@@ -45,10 +45,10 @@ class ProductResponse(BaseModel):
     landing_images: Optional[List[str]] = Field(None, alias='landingImages')
     category_mini: Optional[CategoryMini] = Field(None, alias='categoryMini')
     review_dtos: Optional[List[dict]] = Field(None, alias='reviewDtos')
-    create_by: Optional[str] = None
-    update_by: Optional[str] = None
-    create_at: Optional[datetime] = None
-    update_at: Optional[datetime] = None
+    create_by: Optional[str] = Field(None, alias='createBy')
+    update_by: Optional[str] = Field(None, alias='updateBy')
+    create_at: Optional[datetime] = Field(None, alias='createAt')
+    update_at: Optional[datetime] = Field(None, alias='updateAt')
 
     class Config:
         from_attributes = True

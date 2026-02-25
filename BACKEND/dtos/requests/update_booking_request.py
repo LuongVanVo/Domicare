@@ -10,7 +10,7 @@ class UpdateBookingRequest(BaseModel):
     is_periodic: Optional[bool] = Field(None, alias='isPeriodic')
     note: Optional[str] = None
     start_time: Optional[datetime] = Field(None, alias='startTime')
-    status: Optional[datetime] = Field(None, description="Booking status")
+    status: Optional[str] = Field(None, description="Booking status")
     phone: Optional[str] = Field(None, description="Phone number")
     product_id: Optional[int] = Field(None, alias='productId', description="Product ID")
 

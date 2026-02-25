@@ -262,6 +262,23 @@ class ProductService:
     """HELPER METHODS"""
     def _to_dto(self, product: Product) -> ProductDTO:
         """Convert Product model to ProductDTO"""
+        review_dtos = None
+        if hasattr(product, 'reviews') and product.reviews:
+            review_dtos = [
+                {
+                    'id': review.id,
+                    'rating': review.rating,
+                    'comment': review.comment,
+                    'userId': review.user_id,
+                    'userDTO': {
+                        'name': review.user.full_name if review.user else None,
+                        'avatar': review.user.avatar if review.user else None,
+                        'address': review.user.address if review.user else None
+                    },
+                    'createAt': review.create_at,
+                }
+                for review in product.reviews.all()
+            ]
         return ProductDTO(
             id=product.id,
             name=product.name,
@@ -272,12 +289,12 @@ class ProductService:
             discount=product.discount,
             priceAfterDiscount=product.price_after_discount,
             landingImages=product.landing_images,
-            categoryId=product.category_id,
-            reviewDtos=None,
-            create_by=product.create_by,
-            update_by=product.update_by,
-            create_at=product.create_at,
-            update_at=product.update_at
+            categoryID=product.category_id,
+            reviewDTOs=review_dtos,
+            createBy=product.create_by,
+            updateBy=product.update_by,
+            createAt=product.create_at,
+            updateAt=product.update_at
         )
 
     def _to_response(self, product: Product) -> ProductResponse:

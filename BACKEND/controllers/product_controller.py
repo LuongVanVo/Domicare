@@ -27,7 +27,7 @@ def create_product(request):
 
         return JsonResponse(
             FormatRestResponse.success(
-                data=product.model_dump(),
+                data=product.model_dump(by_alias=True),
                 message="Product created successfully"),
             status=status.HTTP_201_CREATED
         )
@@ -55,7 +55,7 @@ def update_product(request):
 
         return JsonResponse(
             FormatRestResponse.success(
-                data=product.model_dump(),
+                data=product.model_dump(by_alias=True),
                 message="Product updated successfully"),
             status=status.HTTP_200_OK
             )
@@ -97,7 +97,7 @@ def get_product_by_id(request, product_id):
         product = product_service.fetch_product_by_id(product_id)
         return JsonResponse(
             FormatRestResponse.success(
-                data=product.model_dump()
+                data=product.model_dump(by_alias=True)
             ),
             status=status.HTTP_200_OK
         )

@@ -109,7 +109,7 @@ class BookingRepository:
         """Check if booking exists after a specific"""
         return Booking.objects.filter(
             user_id=user_id,
-            products=Product,
+            products=product,
             booking_status=status.value,
             create_at__gt=create_at,
         ).exists()

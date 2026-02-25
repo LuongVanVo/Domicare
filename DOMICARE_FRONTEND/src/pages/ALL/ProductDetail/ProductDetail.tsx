@@ -109,7 +109,7 @@ export default function ProductDetail() {
           <SectionBgWhite>
             <div className=' grid grid-cols-1 md:grid-cols-12 gap-6  p-4'>
               <div className='col-span-1 md:col-span-4'>
-                <Slider images={product.landingImages || []} />
+                <Slider images={[product?.image || '', ...(product?.landingImages || [])].filter(Boolean)} />
               </div>
               <div className='col-span-1 md:col-span-8'>
                 <SectionInView className='w-full h-full flex-col flex justify-center md:px-20'>
