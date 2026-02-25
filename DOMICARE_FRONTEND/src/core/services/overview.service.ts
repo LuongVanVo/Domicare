@@ -11,9 +11,9 @@ import {
 } from '@/models/interface/user.interface'
 
 const API_OVERVIEW_URL = '/users'
-const API_TOPSALE_URL = '/api/dashboard/topsale'
-const API_SUMMARY_URL = '/api/dashboard/summary'
-const API_CHART_URL = '/api/dashboard/chart'
+const API_TOPSALE_URL = '/dashboard/topsale'
+const API_SUMMARY_URL = '/dashboard/summary'
+const API_CHART_URL = '/dashboard/chart'
 
 export const overviewApi = {
   getTopSale: (params: DashboardListConfig) => {
