@@ -5,7 +5,6 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
-from decorators.auth_required import jwt_required
 from exceptions.file_exceptions import FileUploadException, FileNotFoundException
 from services.file_service import FileService
 from utils.format_response import FormatRestResponse
