@@ -16,6 +16,7 @@ from repositories.booking_repository import BookingRepository
 from repositories.product_repository import ProductRepository
 from repositories.review_repository import ReviewRepository
 from repositories.user_repository import UserRepository
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
 class ReviewService:
@@ -37,6 +38,7 @@ class ReviewService:
         logger.info(f"[ReviewService] Review fetched successfully with ID: {review_id}")
         return self._to_dto(review)
 
+    @transaction.atomic
     def create_review(self, request: ReviewRequest, current_user_email: str) -> ReviewDTO:
         """Create a new review"""
         logger.info(f"[ReviewService] Creating review for product ID: {request.product_id}")
@@ -73,7 +75,7 @@ class ReviewService:
         saved_review = self.review_repo.save(review)
 
         # Update product rating
-        product.overal_rating = product.calculate_rating_star()
+        product.overal_rating = product.calculate_rating_star
         self.product_repo.save(product)
 
         logger.info(f"[ReviewService] Review created successfully with ID: {saved_review.id}")

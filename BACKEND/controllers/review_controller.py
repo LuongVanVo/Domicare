@@ -28,7 +28,7 @@ def create_review(request):
 
         return JsonResponse(
             FormatRestResponse.success(
-                data=review,
+                data=review.model_dump(by_alias=True),
                 message="Review created successfully"
             ),
             status=status.HTTP_201_CREATED,

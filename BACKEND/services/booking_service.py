@@ -205,7 +205,9 @@ class BookingService:
                 f"[BookingService] User {current_user.id} tried to update booking {booking_id} owned by user {booking.user.id}")
             raise ForbiddenException("You do not have permission to delete this booking")
 
-        self._validate_start_time(request.start_time)
+        if request.start_time and request.start_time != booking.start_time:
+            self._validate_start_time(request.start_time)
+            booking.start_time = request.start_time
 
         # Update product if changed
         if request.product_id:
@@ -257,7 +259,7 @@ class BookingService:
                 bookingId=booking_id,
                 status=request.status
             )
-            return self.update_booking_status(status_request)
+            return self.update_booking_status(status_request, current_user.email)
 
         # Return updated booking if no status change
         return BookingMapper.to_mini_response(updated_booking)
