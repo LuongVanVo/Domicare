@@ -39,7 +39,7 @@ router.post('/create-payment', function (req, res) {
   res.json(url)
 })
 
-router.get('/vnpay-return', (req, res) => {
+router.get('/return-payment', (req, res) => {
   const { vnp_Amount: amount, vnp_TxnRef: orderId } = req.query
 
   try {

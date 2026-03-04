@@ -34,6 +34,13 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 
+# VNPay configuration
+VNPAY_TMN_CODE = os.getenv('VNPAY_TMN_CODE', '')
+VNPAY_SECURE_HASH = os.getenv('VNPAY_SECURE_HASH', '')
+VNPAY_URL = os.getenv('VNPAY_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html')
+VNPAY_RETURN_URL = os.getenv('VNPAY_RETURN_URL', 'http://localhost:8000/api/v1/payment/return-payment')
+VNPAY_FRONTEND_URL = os.getenv('VNPAY_FRONTEND_URL', 'http://localhost:3000')
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',

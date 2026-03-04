@@ -34,10 +34,10 @@ class BookingStatus(str, Enum):
 
 class PaymentStatus(str, Enum):
     """Payment status enumeration"""
-    PENDING = "pending"
-    SUCCESS = "success"
-    FAILED = "failed"
-    CANCELED = "canceled"
+    PENDING = "PENDING"
+    SUCCESS = "SUCCESS"
+    FAILED = "FAILED"
+    CANCELED = "CANCELED"
 
     @classmethod
     def choices(cls):
