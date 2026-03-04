@@ -21,7 +21,7 @@ export default function Payment ( { product, isOpen, setIsOpen }: PaymentProps )
         const orderId = `ORDER_${ new Date().getTime() }`
 
         try {
-            const response = await axiosClient.post( '/api/vnpay/create-payment', {
+            const response = await axiosClient.post( '/payment/create-payment', {
                 amount,
                 orderInfo,
                 orderId
