@@ -3,11 +3,8 @@ node_modules
 .vscode
 .env.local
 .env.*.local
-src
 scripts
 *.md
 .husky
 .eslintrc
 .prettierrc
-tsconfig*.json
-vite.config.ts
