@@ -4,7 +4,7 @@ djangorestframework==3.14.0
 django-environ==0.11.2
 
 # Database với SSL support
-psycopg2-binary==2.9.9
+psycopg[binary]==3.3.4
 dj-database-url==2.1.0
 
 # Authentication
@@ -19,7 +19,7 @@ django-cors-headers==4.3.1
 cryptography==41.0.7
 
 # Validation
-pydantic==2.5.3
+pydantic>=2.9.0
 
 # External Services
 cloudinary==1.36.0
@@ -44,7 +44,7 @@ types-requests==2.31.0.10
 bcrypt==4.1.2
 
 # Validation
-pydantic==2.5.3
+pydantic>=2.9.0
 email-validator>=2.1.0
 
 python-dateutil>=2.8.2

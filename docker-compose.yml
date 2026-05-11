@@ -2,11 +2,11 @@ services:
   # Backend Service (Spring Boot)
   backend:
     build:
-      context: ./DomiCare
+      context: ./BACKEND
       dockerfile: Dockerfile
     container_name: domicare-backend
     ports:
-      - "8081:8080"
+      - "8888:8888"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
     networks:
