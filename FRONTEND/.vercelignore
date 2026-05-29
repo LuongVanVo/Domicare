@@ -1,0 +1,10 @@
+node_modules
+.git
+.vscode
+.env.local
+.env.*.local
+scripts
+*.md
+.husky
+.eslintrc
+.prettierrc

@@ -12,6 +12,7 @@ from .file import File
 from .token import Token
 from .payment import PaymentTransaction
 from .enums import BookingStatus, Gender, PaymentStatus
+from .chat import Message
 
 __all__ = [
     'User',
@@ -30,4 +31,5 @@ __all__ = [
     'BookingStatus',
     'Gender',
     'PaymentStatus',
+    'Message',
 ]

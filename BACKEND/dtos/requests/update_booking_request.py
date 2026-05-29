@@ -1,4 +1,4 @@
-﻿from datetime import datetime
+from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, Field, field_validator
 
@@ -13,6 +13,9 @@ class UpdateBookingRequest(BaseModel):
     status: Optional[str] = Field(None, description="Booking status")
     phone: Optional[str] = Field(None, description="Phone number")
     product_id: Optional[int] = Field(None, alias='productId', description="Product ID")
+    refund_bank_name: Optional[str] = Field(None, alias='refundBankName')
+    refund_account_number: Optional[str] = Field(None, alias='refundAccountNumber')
+    refund_account_holder: Optional[str] = Field(None, alias='refundAccountHolder')
 
     @field_validator('name')
     @classmethod

@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
@@ -13,6 +13,10 @@ class JwtAuthenticationMiddleware(BaseAuthentication):
         self.get_response = get_response
         self.jwt_service = JwtService()
         self.user_repo = UserRepository()
+
+    def authenticate_header(self, request):
+        """Trả về tiêu chuẩn Bearer để DRF phản hồi lỗi 401 thay vì 403 khi chưa đăng nhập"""
+        return 'Bearer'
 
     def __call__(self, request):
         """Dùng cho Django middleware"""

@@ -14,6 +14,10 @@ class Booking(models.Model):
     start_time = models.DateTimeField()
     phone = models.CharField(max_length=20)
     total_price = models.DecimalField(max_digits=15, decimal_places=2)
+    amount_paid = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    refund_bank_name = models.CharField(max_length=255, blank=True, null=True)
+    refund_account_number = models.CharField(max_length=50, blank=True, null=True)
+    refund_account_holder = models.CharField(max_length=255, blank=True, null=True)
     booking_status = models.CharField(
         max_length=20,
         choices=BookingStatus.choices(),

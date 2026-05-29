@@ -100,11 +100,21 @@ class PaymentTransaction(models.Model):
     
     def save(self, *args, **kwargs):
         # Handle audit fields (matches @PrePersist/@PreUpdate)
+        current_user = get_current_user()
+        user_str = 'system'
+        if current_user:
+            if not getattr(current_user, 'is_anonymous', False):
+                user_str = getattr(current_user, 'email', None) or getattr(current_user, 'username', None) or str(current_user)
+            else:
+                user_str = str(current_user)
+
         if not self.pk:
-            current_user = get_current_user()
-            self.created_by = current_user if current_user else 'system'
+            self.created_by = user_str
         else:
-            current_user = get_current_user()
-            self.updated_by = current_user if current_user else 'system'
+            self.updated_by = user_str
+
+        # Clean IP address to remove subnet mask if present (e.g., PostgreSQL inet '127.0.0.1/32')
+        if self.ip_address and '/' in self.ip_address:
+            self.ip_address = self.ip_address.split('/')[0]
 
         super().save(*args, **kwargs)

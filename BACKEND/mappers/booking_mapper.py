@@ -1,4 +1,4 @@
-﻿from dtos.booking_dto import BookingDTO
+from dtos.booking_dto import BookingDTO
 from dtos.responses.mini_booking_response import MiniBookingResponse, UserMini
 from mappers.product_mapper import ProductMapper
 from mappers.user_mapper import UserMapper
@@ -26,6 +26,7 @@ class BookingMapper:
             id=booking.id,
             address=booking.address,
             totalPrice=booking.total_price,
+            amountPaid=booking.amount_paid,
             note=booking.note,
             startTime=booking.start_time,
             products=products_dto,
@@ -34,6 +35,9 @@ class BookingMapper:
             isPeriodic=booking.is_periodic,
             bookingStatus=booking.booking_status,
             phone=booking.phone,
+            refundBankName=booking.refund_bank_name,
+            refundAccountNumber=booking.refund_account_number,
+            refundAccountHolder=booking.refund_account_holder,
             createBy=booking.create_by,
             updateBy=booking.update_by,
             createAt=booking.create_at,
@@ -77,6 +81,7 @@ class BookingMapper:
             id=booking.id,
             address=booking.address,
             totalPrice=booking.total_price,
+            amountPaid=booking.amount_paid,
             note=booking.note,
             startTime=booking.start_time,
             products=products_mini,
@@ -85,6 +90,9 @@ class BookingMapper:
             isPeriodic=booking.is_periodic,
             bookingStatus=booking.booking_status,
             phone=booking.phone,
+            refundBankName=booking.refund_bank_name,
+            refundAccountNumber=booking.refund_account_number,
+            refundAccountHolder=booking.refund_account_holder,
             createBy=booking.create_by,
             updateBy=booking.update_by,
             createAt=booking.create_at,
