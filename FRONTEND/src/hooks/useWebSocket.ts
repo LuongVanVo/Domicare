@@ -18,8 +18,23 @@ export const useWebSocket = (config: WebSocketConfig) => {
   const reconnectTimeoutRef = useRef<any>(null)
   const { isAuthenticated } = useContext(AppContext)
 
-  const token = typeof window !== 'undefined' ? getAccessTokenFromLS() : null
+  const [token, setToken] = useState<string | null>(() =>
+    typeof window !== 'undefined' ? getAccessTokenFromLS() : null
+  )
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handleTokenChanged = (event: Event) => {
+      const customEvent = event as CustomEvent<string | null>
+      setToken(customEvent.detail)
+    }
+
+    window.addEventListener('auth:token-changed', handleTokenChanged)
+    return () => {
+      window.removeEventListener('auth:token-changed', handleTokenChanged)
+    }
+  }, [])
   // Use refs for callbacks and topics to prevent triggering reconnects when they change references
   const topicsRef = useRef(config.topics)
   const onConnectRef = useRef(config.onConnect)
