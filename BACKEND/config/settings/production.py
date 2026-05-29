@@ -7,6 +7,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 
 # Security settings
 SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
@@ -26,6 +27,10 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+        },
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
@@ -34,7 +39,7 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['file'],
+            'handlers': ['console', 'file'],
             'level': 'INFO',
             'propagate': True,
         },

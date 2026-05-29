@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useContext } from 'react'
 import { getAccessTokenFromLS } from '@/utils/storage'
 import { AppContext } from '@/core/contexts/app.context'
+import { userApi } from '@/core/services/user.service'
 
 interface WebSocketConfig {
   url: string
@@ -12,14 +13,44 @@ interface WebSocketConfig {
   onError?: (error: any) => void
 }
 
+const isTokenExpired = (token: string | null): boolean => {
+  if (!token) return true
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) return true
+    const payload = parts[1]
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
+    const decoded = JSON.parse(atob(base64))
+    if (!decoded.exp) return true
+    return decoded.exp * 1000 < Date.now() + 10000
+  } catch {
+    return true
+  }
+}
+
 export const useWebSocket = (config: WebSocketConfig) => {
   const wsRef = useRef<WebSocket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const reconnectTimeoutRef = useRef<any>(null)
   const { isAuthenticated } = useContext(AppContext)
 
-  const token = typeof window !== 'undefined' ? getAccessTokenFromLS() : null
+  const [token, setToken] = useState<string | null>(() =>
+    typeof window !== 'undefined' ? getAccessTokenFromLS() : null
+  )
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handleTokenChanged = (event: Event) => {
+      const customEvent = event as CustomEvent<string | null>
+      setToken(customEvent.detail)
+    }
+
+    window.addEventListener('auth:token-changed', handleTokenChanged)
+    return () => {
+      window.removeEventListener('auth:token-changed', handleTokenChanged)
+    }
+  }, [])
   // Use refs for callbacks and topics to prevent triggering reconnects when they change references
   const topicsRef = useRef(config.topics)
   const onConnectRef = useRef(config.onConnect)
@@ -45,6 +76,16 @@ export const useWebSocket = (config: WebSocketConfig) => {
     }
 
     const connect = () => {
+      if (isTokenExpired(token)) {
+        console.warn('WebSocket token is expired, triggering proactive refresh...')
+        userApi.getMe().catch((err) => {
+          console.error('Failed to refresh token proactively for WebSocket:', err)
+        })
+        setIsConnected(false)
+        reconnectTimeoutRef.current = setTimeout(connect, 5000)
+        return
+      }
+
       try {
         // Convert http/https to ws/wss
         const wsUrl = config.url.replace(/^http/, 'ws') + `?token=${token}`

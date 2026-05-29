@@ -13,6 +13,9 @@ export const setAccessTokenToLS = (token: string) => {
     secure: true,
     sameSite: 'strict'
   })
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('auth:token-changed', { detail: token }))
+  }
 }
 
 export const setRefreshTokenToLS = (token: string) => {
@@ -33,6 +36,9 @@ export const getRefreshTokenFromLS = (): string => {
 
 export const removeAccessTokenFromLS = () => {
   Cookies.remove('access_token')
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('auth:token-changed', { detail: null }))
+  }
 }
 
 export const removeRefreshTokenFromLS = () => {
