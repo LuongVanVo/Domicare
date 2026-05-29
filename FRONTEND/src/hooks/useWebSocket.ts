@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useContext } from 'react'
 import { getAccessTokenFromLS } from '@/utils/storage'
 import { AppContext } from '@/core/contexts/app.context'
+import { userApi } from '@/core/services/user.service'
 
 interface WebSocketConfig {
   url: string
@@ -10,6 +11,21 @@ interface WebSocketConfig {
   onConnect?: () => void
   onDisconnect?: () => void
   onError?: (error: any) => void
+}
+
+const isTokenExpired = (token: string | null): boolean => {
+  if (!token) return true
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) return true
+    const payload = parts[1]
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
+    const decoded = JSON.parse(atob(base64))
+    if (!decoded.exp) return true
+    return decoded.exp * 1000 < Date.now() + 10000
+  } catch {
+    return true
+  }
 }
 
 export const useWebSocket = (config: WebSocketConfig) => {
@@ -60,6 +76,16 @@ export const useWebSocket = (config: WebSocketConfig) => {
     }
 
     const connect = () => {
+      if (isTokenExpired(token)) {
+        console.warn('WebSocket token is expired, triggering proactive refresh...')
+        userApi.getMe().catch((err) => {
+          console.error('Failed to refresh token proactively for WebSocket:', err)
+        })
+        setIsConnected(false)
+        reconnectTimeoutRef.current = setTimeout(connect, 5000)
+        return
+      }
+
       try {
         // Convert http/https to ws/wss
         const wsUrl = config.url.replace(/^http/, 'ws') + `?token=${token}`
