@@ -1,10 +1,11 @@
-﻿from typing import List, Optional
-from pydantic import BaseModel, EmailStr, Field
+from typing import List, Optional
+from pydantic import BaseModel, EmailStr, Field, model_validator
 from datetime import datetime
 from dtos.role_dto import RoleDTO
 
 class UserDTO(BaseModel):
     id: Optional[int] = None
+    _id: Optional[str] = None
     name: Optional[str] = None
     email: EmailStr
     password: Optional[str] = None
@@ -23,6 +24,12 @@ class UserDTO(BaseModel):
     create_at: Optional[datetime] = Field(None, alias="createAt")
     update_at: Optional[datetime] = Field(None, alias="updateAt")
     roles: Optional[List[RoleDTO]] = []
+
+    @model_validator(mode='after')
+    def set_id_compat(self) -> 'UserDTO':
+        if self.id is not None and self._id is None:
+            self._id = str(self.id)
+        return self
 
     class Config:
         populate_by_name = True

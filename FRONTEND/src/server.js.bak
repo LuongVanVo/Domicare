@@ -26,15 +26,15 @@ async function startServer() {
   // -----------------------------
   try {
     const apiDir = isProd ? path.resolve(__dirname, '../api') : path.resolve(__dirname, '../api')
-    const vnpayPath = path.join(apiDir, 'vnpay.js')
+    const paymentPath = path.join(apiDir, 'payment.js')
 
     // Convert Windows path to file:// URL
-    const vnpayUrl = new URL(`file:///${vnpayPath.replace(/\\/g, '/')}`).href
-    const { default: vnpayRouter } = await import(vnpayUrl)
-    app.use('/api', vnpayRouter)
-    console.log('✅ VNPay router loaded successfully from:', vnpayPath)
+    const paymentUrl = new URL(`file:///${paymentPath.replace(/\\/g, '/')}`).href
+    const { default: paymentRouter } = await import(paymentUrl)
+    app.use('/api', paymentRouter)
+    console.log('✅ Payment router loaded successfully from:', paymentPath)
   } catch (err) {
-    console.error('⚠️ Không thể load module vnpay.js:', err)
+    console.error('⚠️ Không thể load module payment.js:', err)
   }
 
   // -----------------------------

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { getAccessTokenFromLS } from '@/utils/storage'
 
 interface WebSocketConfig {
   url: string
@@ -11,77 +12,116 @@ interface WebSocketConfig {
 }
 
 export const useWebSocket = (config: WebSocketConfig) => {
-  const stompClient = useRef<any>(null)
+  const wsRef = useRef<WebSocket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
+  const reconnectTimeoutRef = useRef<any>(null)
+
+  // Use refs for callbacks and topics to prevent triggering reconnects when they change references
+  const topicsRef = useRef(config.topics)
+  const onConnectRef = useRef(config.onConnect)
+  const onDisconnectRef = useRef(config.onDisconnect)
+  const onErrorRef = useRef(config.onError)
 
   useEffect(() => {
-    // Only run on client-side (not during SSR)
+    topicsRef.current = config.topics
+    onConnectRef.current = config.onConnect
+    onDisconnectRef.current = config.onDisconnect
+    onErrorRef.current = config.onError
+  }, [config])
+
+  useEffect(() => {
+    // Only run on client-side
     if (typeof window === 'undefined') {
       return
     }
 
-    // Dynamic import để tránh load trên server
-    let client: any = null
+    const token = getAccessTokenFromLS()
+    if (!config.url || !token) {
+      setIsConnected(false)
+      return
+    }
 
-    const initWebSocket = async () => {
-      if (!config.url || !config.topics || Object.keys(config.topics).length === 0) {
-        setIsConnected(false)
-        return
-      }
-
-      if (stompClient.current) {
-        stompClient.current.deactivate()
-        stompClient.current = null
-      }
-
+    const connect = () => {
       try {
-        const [{ Client }, { default: SockJS }] = await Promise.all([import('@stomp/stompjs'), import('sockjs-client')])
+        // Convert http/https to ws/wss
+        const wsUrl = config.url.replace(/^http/, 'ws') + `?token=${token}`
+        const ws = new WebSocket(wsUrl)
+        wsRef.current = ws
 
-        client = new Client({
-          webSocketFactory: () => new SockJS(config.url),
-          reconnectDelay: 5000,
-          onConnect: () => {
-            setIsConnected(true)
-            Object.entries(config.topics).forEach(([topic, callback]) => {
-              client.subscribe(topic, (message: any) => {
-                const data = JSON.parse(message.body)
-                callback(data)
+        ws.onopen = () => {
+          setIsConnected(true)
+          onConnectRef.current?.()
+        }
+
+        ws.onclose = () => {
+          setIsConnected(false)
+          onDisconnectRef.current?.()
+          // Reconnect after 5 seconds
+          reconnectTimeoutRef.current = setTimeout(connect, 5000)
+        }
+
+        ws.onerror = (error) => {
+          setIsConnected(false)
+          onErrorRef.current?.(error)
+        }
+
+        ws.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data)
+            const msgType = message.type
+            const msgData = message.data
+
+            if (msgType === 'booking_notification') {
+              const action = message.action // 'new' or 'update'
+              Object.entries(topicsRef.current).forEach(([topic, callback]) => {
+                if (action === 'new' && topic.includes('/bookings/new')) {
+                  callback(msgData)
+                } else if (action === 'update' && topic.includes('/bookings/update')) {
+                  callback(msgData)
+                }
               })
-            })
-
-            config.onConnect?.()
-          },
-          onDisconnect: () => {
-            setIsConnected(false)
-            config.onDisconnect?.()
-          },
-          onStompError: (frame: any) => {
-            setIsConnected(false)
-            config.onError?.(frame)
+            } else if (msgType === 'chat_message') {
+              Object.entries(topicsRef.current).forEach(([topic, callback]) => {
+                if (topic === 'chat_message' || topic.includes('chat')) {
+                  callback(msgData)
+                }
+              })
+            }
+          } catch (e) {
+            console.error('Failed to parse WebSocket message:', e)
           }
-        })
-
-        stompClient.current = client
-        client.activate()
+        }
       } catch (error) {
         console.error('Failed to initialize WebSocket:', error)
         setIsConnected(false)
       }
     }
 
-    initWebSocket()
+    connect()
 
     return () => {
-      // Cleanup on unmount or dependency change
-      if (stompClient.current) {
-        stompClient.current.deactivate()
-        stompClient.current = null
-        setIsConnected(false)
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current)
       }
+      if (wsRef.current) {
+        wsRef.current.onclose = null // Prevents reconnect loop on unmount
+        wsRef.current.close()
+        wsRef.current = null
+      }
+      setIsConnected(false)
     }
-  }, [config])
+  }, [config.url]) // Reconnect only if connection URL changes
+
+  const sendMessage = (action: string, payload: any) => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ action, ...payload }))
+    } else {
+      console.warn('WebSocket is not open. Message not sent:', action, payload)
+    }
+  }
 
   return {
-    isConnected: isConnected
+    isConnected,
+    sendMessage
   }
 }

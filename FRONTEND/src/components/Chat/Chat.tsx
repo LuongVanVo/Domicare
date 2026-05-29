@@ -7,59 +7,35 @@ import { AppContext } from '@/core/contexts/app.context'
 import { ChatSchema } from '@/core/zod/chat.zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { MessageSquare, Send } from 'lucide-react'
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Form, FormControl, FormField, FormItem } from '../ui/form'
 import { useGetConversationByReceiverId } from '@/core/queries/chat.query'
 import { Conversation, Cursor } from '@/models/interface/chat.interface'
 import MessageChat from '../MessageChat'
-import { getAccessTokenFromLS } from '@/utils/storage'
+import { useWebSocket } from '@/hooks/useWebSocket'
 
 export function Chat() {
   const [messages, setMessages] = useState<Conversation[]>([])
   const cursorRef = useRef<Cursor>({ last_message_id: '', last_updated_at: '' })
   const chatMutation = useGetConversationByReceiverId()
-  const socketRef = useRef<any>(null)
   const { profile } = useContext(AppContext)
   const user = profile?._id
 
-  useEffect(() => {
-    // Only run on client-side
-    if (typeof window === 'undefined') {
-      return
-    }
+  const webSocketConfig = useMemo(
+    () => ({
+      url: `${config.baseUrl}/ws`,
+      topics: {
+        chat_message: (data: Conversation) => {
+          setMessages((prev) => [...prev, data])
+        }
+      }
+    }),
+    []
+  )
 
-    if (!socketRef.current) {
-      // Dynamic import socket.io-client
-      import('socket.io-client')
-        .then(({ io }) => {
-          const token = getAccessTokenFromLS()
-          const socket = io(config.baseUrl, {
-            auth: {
-              authorization: `Bearer ${token}`
-            }
-          })
-
-          socketRef.current = socket
-          socket.on('connect_error', (err) => {
-            console.log('Socket connection error:', err)
-          })
-
-          socket.on('receive chat', (data: Conversation) => {
-            setMessages((prev) => [...prev, data])
-          })
-        })
-        .catch((err) => {
-          console.error('Failed to load socket.io-client:', err)
-        })
-    }
-
-    return () => {
-      socketRef.current?.disconnect()
-      socketRef.current = null
-    }
-  }, [])
+  const { sendMessage } = useWebSocket(webSocketConfig)
 
   useEffect(() => {
     if (user) {
@@ -78,16 +54,12 @@ export function Chat() {
 
   const handleSendMessage = () => {
     const message = form.getValues('message')
-    const date = new Date()
-    const conversationNext: Conversation = {
+    if (!message.trim()) return
+
+    sendMessage('send_chat', {
       receiver_id: user as string,
-      message: message,
-      sender_id: profile?._id as string,
-      created_at: date,
-      updated_at: date
-    }
-    setMessages((prev) => [...prev, conversationNext])
-    socketRef.current?.emit('private chat', conversationNext)
+      message: message
+    })
     form.setValue('message', '')
   }
 

@@ -41,8 +41,13 @@ VNPAY_URL = os.getenv('VNPAY_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpa
 VNPAY_RETURN_URL = os.getenv('VNPAY_RETURN_URL', 'http://localhost:8000/api/v1/payment/return-payment')
 VNPAY_FRONTEND_URL = os.getenv('VNPAY_FRONTEND_URL', 'http://localhost:3000')
 
+# Stripe configuration
+STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY', 'pk_test_placeholder')
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', 'sk_test_placeholder')
+
 # Application definition
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -54,6 +59,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'drf_spectacular',
+    'channels',
     
     # Local apps - tạo app 'core' để chứa models
     'models',
@@ -93,6 +99,14 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = 'config.asgi.application'
+
+# Channel Layers for WebSockets (InMemory for local development)
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 # Database
 DATABASES = {
