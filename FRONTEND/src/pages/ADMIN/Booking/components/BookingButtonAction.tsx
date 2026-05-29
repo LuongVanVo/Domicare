@@ -21,9 +21,13 @@ import omit from 'lodash/omit'
 
 import { CheckIcon, PlusCircle, XCircle } from 'lucide-react'
 
-import { createSearchParams, useNavigate } from 'react-router-dom'
+import { createSearchParams, useLocation, useNavigate } from 'react-router-dom'
 
 export function BookingButtonAction() {
+  const location = useLocation()
+  const isSaleRoute = location.pathname.startsWith('/sale')
+  const basePath = isSaleRoute ? path.sale.booking : path.admin.booking
+
   const queryString = useBookingQueryConfig({})
   const { bookingStatus } = queryString
   const bookingStatusList = getBookingStatusList()
@@ -31,7 +35,7 @@ export function BookingButtonAction() {
 
   const handleRemoveSearch = () =>
     navigate({
-      pathname: path.admin.booking,
+      pathname: basePath,
       search: createSearchParams(
         omit(
           {
@@ -43,7 +47,7 @@ export function BookingButtonAction() {
     })
   const handleSearchStatus = (status: BookingStatus) => {
     navigate({
-      pathname: path.admin.booking,
+      pathname: basePath,
       search: createSearchParams({
         ...queryString,
         bookingStatus: status

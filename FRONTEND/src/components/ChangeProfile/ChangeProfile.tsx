@@ -75,21 +75,19 @@ export default function Profile() {
         data.imageId = avatarRes.data.data.id
         setFile(undefined)
       }
-      
+
       const dataApi = {
         ...data,
-        dateOfBirth: data.dateOfBirth 
-          ? formatDateToYYYYMMDD(data.dateOfBirth)
-          : undefined
+        dateOfBirth: data.dateOfBirth ? formatDateToYYYYMMDD(data.dateOfBirth) : undefined
       }
-      
+
       await userUpdateMutation.mutateAsync(dataApi as UserUpdateRequest)
       refetch()
     } catch {
       Toast.error({ description: 'Lỗi không xác định.' })
     }
   }
-  
+
   // Helper function
   const formatDateToYYYYMMDD = (date: Date): string => {
     const year = date.getFullYear()

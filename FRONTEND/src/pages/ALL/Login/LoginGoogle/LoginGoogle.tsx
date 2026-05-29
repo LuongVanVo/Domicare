@@ -17,7 +17,7 @@ export default function LoginGoogle() {
   const navigate = useNavigate()
   const getMeMutation = useGetMe()
   const processedRef = useRef(false)
-  
+
   useEffect(() => {
     if (access_token && refresh_token && !processedRef.current) {
       processedRef.current = true
@@ -35,9 +35,9 @@ export default function LoginGoogle() {
       const userData = getMeMutation.data.data.data
       console.log('✅ getMeMutation SUCCESS!')
       console.log('👤 User data:', getMeMutation.data?.data.data)
-      Toast.success({ 
-        title: 'Thành công', 
-        description: 'Đăng nhập với Google thành công! 🚀⚡' 
+      Toast.success({
+        title: 'Thành công',
+        description: 'Đăng nhập với Google thành công! 🚀⚡'
       })
       setTimeout(() => {
         console.log('🏠 Redirecting to home...')
@@ -53,19 +53,18 @@ export default function LoginGoogle() {
   useEffect(() => {
     if (getMeMutation.isError) {
       console.error('❌ getMeMutation ERROR:', getMeMutation.error)
-      Toast.error({ 
-        description: 'Không thể lấy thông tin người dùng. Vui lòng thử lại!' 
+      Toast.error({
+        description: 'Không thể lấy thông tin người dùng. Vui lòng thử lại!'
       })
       navigate(path.login)
     }
   }, [getMeMutation.isError, navigate])
 
-
   // Xử lý khi getMeMutation bị lỗi
   useEffect(() => {
     if (getMeMutation.isError) {
-      Toast.error({ 
-        description: 'Không thể lấy thông tin người dùng. Vui lòng thử lại!' 
+      Toast.error({
+        description: 'Không thể lấy thông tin người dùng. Vui lòng thử lại!'
       })
       navigate(path.login)
     }
@@ -94,7 +93,7 @@ export default function LoginGoogle() {
     }
     const queryString = new URLSearchParams(query).toString()
     const fullUrl = `${url}?${queryString}`
-    
+
     // Debug logging
     console.log('=== OAuth Debug ===')
     console.log('Google URL:', url)
@@ -102,7 +101,7 @@ export default function LoginGoogle() {
     console.log('Redirect URI:', config.redirectUri)
     console.log('Full OAuth URL:', fullUrl)
     console.log('==================')
-    
+
     return fullUrl
   }
   const loginGG = () => {

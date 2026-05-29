@@ -13,6 +13,9 @@ export interface Booking {
   saleDTO?: User | null
   isPeriodic?: boolean
   bookingStatus?: string
+  refundBankName?: string
+  refundAccountNumber?: string
+  refundAccountHolder?: string
   createBy?: string
   updateBy?: string
   createAt?: string
@@ -34,6 +37,9 @@ export interface BookingRequest extends BookingAPI {
 export interface BookingUpdateRequest extends BookingAPI {
   status?: BookingStatus
   bookingId?: number
+  refundBankName?: string
+  refundAccountNumber?: string
+  refundAccountHolder?: string
 }
 export interface DataBookingAPI {
   dataAPI: BookingRequest

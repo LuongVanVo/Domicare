@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 import secrets
 import string
 from datetime import timedelta, datetime
@@ -192,7 +192,11 @@ class BookingService:
             raise BookingNotFoundException(f"Booking not found with ID: {booking_id}")
 
         # Validate status
-        if booking.booking_status not in [BookingStatus.PENDING.value, BookingStatus.ACCEPTED.value]:
+        is_updating_refund = request.refund_bank_name is not None or request.refund_account_number is not None or request.refund_account_holder is not None
+        if is_updating_refund and booking.booking_status == BookingStatus.SUCCESS.value:
+            raise BookingStatusException("Đơn hàng đã hoàn thành, không thể yêu cầu hoàn tiền.")
+
+        if not is_updating_refund and booking.booking_status not in [BookingStatus.PENDING.value, BookingStatus.ACCEPTED.value]:
             logger.warning(f"[BookingService] Cannot update booking with ID: {booking_id} due to status: {booking.booking_status}")
             raise BookingStatusException(f"Cannot update booking with status: {booking.booking_status}")
 
@@ -239,6 +243,12 @@ class BookingService:
             booking.start_time = request.start_time
         if request.is_periodic is not None:
             booking.is_periodic = request.is_periodic
+        if request.refund_bank_name is not None:
+            booking.refund_bank_name = request.refund_bank_name.strip()
+        if request.refund_account_number is not None:
+            booking.refund_account_number = request.refund_account_number.strip()
+        if request.refund_account_holder is not None:
+            booking.refund_account_holder = request.refund_account_holder.strip()
 
         # Update user name
         if request.name:
@@ -337,6 +347,9 @@ class BookingService:
             new_status = BookingStatus(status_str.upper())
         except ValueError:
             raise ValueError(f"Invalid booking status: {status_str}")
+
+        if new_status in [BookingStatus.SUCCESS, BookingStatus.FAILED]:
+            raise BookingStatusException("Không được phép tự cập nhật trạng thái thành công hoặc thất bại. Trạng thái này được hệ thống cập nhật tự động.")
 
         # Get booking with related data
         booking = self.booking_repo.find_by_id_with_user_and_products(booking_id)
@@ -446,6 +459,10 @@ class BookingService:
                 customer.user_total_success_bookings += 1
                 self._calculate_success_percentage(current_user)
                 logger.info(f"[Booking] Booking {booking_id} marked as SUCCESS by SALE user {current_user_email}")
+
+            elif new_status == BookingStatus.CANCELLED:
+                booking.booking_status = BookingStatus.CANCELLED.value
+                logger.info(f"[Booking] Booking {booking_id} marked as CANCELLED by SALE user {current_user_email}")
 
             elif new_status == BookingStatus.ACCEPTED:
                 logger.info(f"[Booking] Booking {booking_id} is already in ACCEPTED status")

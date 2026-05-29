@@ -117,13 +117,24 @@ class StripeService:
                     total_paid = sum([p.amount for p in successful_payments])
                     booking.amount_paid = total_paid
                     
-                    if booking.amount_paid >= booking.total_price:
+                    is_final_payment = booking.amount_paid >= booking.total_price
+                    
+                    if is_final_payment:
                         booking.booking_status = BookingStatus.SUCCESS.value
                     else:
                         booking.booking_status = BookingStatus.ACCEPTED.value
                         
                     booking.save()
                     logger.info(f"[StripeService] Updated Booking #{booking.id}: amount_paid={booking.amount_paid}, status={booking.booking_status}")
+
+                    # Generate auto system chat message
+                    amount_formatted = f"{payment_transaction.amount:,.0f}".replace(",", ".")
+                    if is_final_payment:
+                        message_text = f"[HỆ THỐNG] Khách hàng đã thanh toán nốt số tiền còn lại thành công cho Đơn đặt lịch #{booking.id}. Số tiền: {amount_formatted} VND. Đơn hàng đã hoàn thành!"
+                    else:
+                        message_text = f"[HỆ THỐNG] Khách hàng đã thanh toán đặt cọc thành công cho Đơn đặt lịch #{booking.id}. Số tiền cọc: {amount_formatted} VND."
+                    
+                    self._send_system_payment_chat_message(booking, message_text)
 
                 logger.info(f"[StripeService] Payment succeeded for order: {order_id_str}")
                 return f"{self.frontend_url}/payment?status=success&orderInfo={order_id_str}&amount={payment_transaction.amount * 100}"
@@ -152,3 +163,63 @@ class StripeService:
         else:
             ip = request.META.get('REMOTE_ADDR')
         return ip
+
+    def _send_system_payment_chat_message(self, booking, message_text):
+        """Send a real-time system message notifying user and staff of successful payment"""
+        try:
+            from models.chat import Message
+            from models.user import User
+            from django.db.models import Q
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+
+            sender = booking.user
+            # Determine receiver: assigned Sale user, or last chatted partner, or Admin
+            if booking.sale_user:
+                receiver = booking.sale_user
+            else:
+                last_message = Message.objects.filter(
+                    Q(sender=sender) | Q(receiver=sender)
+                ).exclude(sender=sender, receiver=sender).order_by('-created_at').first()
+                if last_message:
+                    receiver = last_message.receiver if last_message.sender == sender else last_message.sender
+                else:
+                    receiver = User.objects.filter(roles__name='ROLE_ADMIN').first() or User.objects.first()
+
+            # Create message in database
+            message = Message.objects.create(
+                sender=sender,
+                receiver=receiver,
+                message=message_text
+            )
+
+            # Broadcast via WebSocket Channels
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                message_data = {
+                    "_id": str(message.id),
+                    "sender_id": str(message.sender_id),
+                    "receiver_id": str(message.receiver_id),
+                    "message": message.message,
+                    "created_at": message.created_at.isoformat(),
+                    "updated_at": message.updated_at.isoformat()
+                }
+                # Send to receiver group (Sale/Admin)
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{message.receiver_id}",
+                    {
+                        "type": "chat_message",
+                        "data": message_data
+                    }
+                )
+                # Send to sender group (Customer)
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{message.sender_id}",
+                    {
+                        "type": "chat_message",
+                        "data": message_data
+                    }
+                )
+                logger.info(f"[StripeService] Successfully sent system payment chat message for booking #{booking.id}")
+        except Exception as e:
+            logger.error(f"[StripeService] Failed to send system payment chat message: {e}", exc_info=True)

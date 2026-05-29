@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { path } from '@/core/constants/path'
 import { useUpdateSttBookingMutation } from '@/core/queries/product.query'
@@ -8,13 +9,15 @@ import { useQueryClient } from '@tanstack/react-query'
 import isEqual from 'lodash/isEqual'
 import { useNavigate } from 'react-router-dom'
 import axiosClient from '@/core/services/axios-client'
-import { CreditCard } from 'lucide-react'
+import { CreditCard, RotateCcw } from 'lucide-react'
+import { RefundDialog } from '@/components/RefundDialog'
 
 interface ManaegeProps {
   booking: Booking
   queryString: BookingQueryConfig
 }
 export default function Manage({ booking, queryString }: ManaegeProps) {
+  const [isRefundOpen, setIsRefundOpen] = useState(false)
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const handleCancleBooking = useUpdateSttBookingMutation({
@@ -67,36 +70,51 @@ export default function Manage({ booking, queryString }: ManaegeProps) {
     }
   }
   return (
-    <div className='flex justify-end items-center pt-1.5 gap-2'>
-      {isEqual(booking.bookingStatus, BookingStatus.ACCEPTED) && Number(booking.amountPaid || 0) < Number(booking.totalPrice) && (
-        <Button
-          onClick={handlePayRemaining}
-          className='text-white bg-amber-600 hover:bg-amber-700 font-bold flex items-center gap-1.5 cursor-pointer animate-pulse'
-        >
-          <CreditCard size={15} />
-          Thanh toán nốt
-        </Button>
-      )}
-      {isEqual(booking.bookingStatus, BookingStatus.PENDING) && (
-        <Button
-          onClick={handleCancle}
-          disabled={handleCancleBooking.isPending}
-          variant={'destructive'}
-          className='text-white bg-red-500 cursor-pointer'
-        >
-          Huỷ dịch vụ
-        </Button>
-      )}
-      {isEqual(booking.bookingStatus, BookingStatus.SUCCESS) && (
-        <>
-          <Button onClick={handleRating} variant={'outline'} className='cursor-pointer'>
-            Đánh giá
+    <>
+      <div className='flex justify-end items-center pt-1.5 gap-2'>
+        {Number(booking.amountPaid || 0) > 0 &&
+          ['PENDING', 'ACCEPTED', 'PROCESSING'].includes(booking.bookingStatus || '') && (
+            <Button
+              onClick={() => setIsRefundOpen(true)}
+              variant='outline'
+              className='border-red-200 hover:bg-red-50 text-red-600 hover:text-red-700 font-semibold flex items-center gap-1.5 cursor-pointer'
+            >
+              <RotateCcw size={15} />
+              Yêu cầu hoàn tiền
+            </Button>
+          )}
+        {isEqual(booking.bookingStatus, BookingStatus.ACCEPTED) &&
+          Number(booking.amountPaid || 0) < Number(booking.totalPrice) && (
+            <Button
+              onClick={handlePayRemaining}
+              className='text-white bg-amber-600 hover:bg-amber-700 font-bold flex items-center gap-1.5 cursor-pointer animate-pulse'
+            >
+              <CreditCard size={15} />
+              Thanh toán nốt
+            </Button>
+          )}
+        {isEqual(booking.bookingStatus, BookingStatus.PENDING) && (
+          <Button
+            onClick={handleCancle}
+            disabled={handleCancleBooking.isPending}
+            variant={'destructive'}
+            className='text-white bg-red-500 cursor-pointer'
+          >
+            Huỷ dịch vụ
           </Button>
-          <Button onClick={handleBookingAgain} variant={'default'} className='text-white bg-main cursor-pointer'>
-            Đặt lại dịch vụ
-          </Button>
-        </>
-      )}
-    </div>
+        )}
+        {isEqual(booking.bookingStatus, BookingStatus.SUCCESS) && (
+          <>
+            <Button onClick={handleRating} variant={'outline'} className='cursor-pointer'>
+              Đánh giá
+            </Button>
+            <Button onClick={handleBookingAgain} variant={'default'} className='text-white bg-main cursor-pointer'>
+              Đặt lại dịch vụ
+            </Button>
+          </>
+        )}
+      </div>
+      <RefundDialog isOpen={isRefundOpen} onClose={() => setIsRefundOpen(false)} booking={booking} />
+    </>
   )
 }

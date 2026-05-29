@@ -5,6 +5,8 @@ import { Toast } from '@/utils/toastMessage'
 import { Booking } from '@/models/interface/booking.interface'
 import config from '@/configs'
 
+import { path } from '@/core/constants/path'
+
 interface BookingWebSocketProps {
   queryKey: (string | object)[]
   isUser?: boolean
@@ -12,27 +14,29 @@ interface BookingWebSocketProps {
   refetch?: () => void
 }
 
-export const useBookingWebSocket = ({ queryKey, isUser = false, userId }: BookingWebSocketProps) => {
+export const useBookingWebSocket = ({ isUser = false, userId }: BookingWebSocketProps) => {
   const queryClient = useQueryClient()
 
   const handleNewBooking = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: queryKey })
-  }, [queryClient, queryKey])
+    queryClient.invalidateQueries({ queryKey: [path.admin.booking] })
+    queryClient.invalidateQueries({ queryKey: [path.sale.booking] })
+  }, [queryClient])
 
   const handleUpdateBooking = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: queryKey })
-  }, [queryClient, queryKey])
+    queryClient.invalidateQueries({ queryKey: [path.admin.booking] })
+    queryClient.invalidateQueries({ queryKey: [path.sale.booking] })
+  }, [queryClient])
 
   const handleUpdateBookingUser = useCallback(
     (message: Booking) => {
       const prdName = message.products?.[0]?.name
-      queryClient.invalidateQueries({ queryKey: queryKey })
+      queryClient.invalidateQueries({ queryKey: [path.user.history] })
       Toast.info({
         title: 'Thông báo',
         description: `Có sự thay đổi trạng thái cho đơn đặt hàng ${prdName} , vui lòng kiểm tra thông tin của bạn.`
       })
     },
-    [queryClient, queryKey]
+    [queryClient]
   )
 
   const register = {
@@ -52,7 +56,7 @@ export const useBookingWebSocket = ({ queryKey, isUser = false, userId }: Bookin
       topics: isUser ? register.user : register.admin,
       onError: (error: any) => console.error('useBookingWebSocket: WebSocket error', error)
     }),
-    [isUser]
+    [isUser, userId, handleNewBooking, handleUpdateBookingUser, handleUpdateBooking]
   )
 
   const { isConnected } = useWebSocket(webSocketConfig)

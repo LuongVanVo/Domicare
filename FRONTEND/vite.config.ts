@@ -25,11 +25,7 @@ export default defineConfig({
     port: 3000,
     host: '0.0.0.0',
     open: true,
-    allowedHosts: [
-      'domicare.cloud.hnagnurtme.id.vn',
-      'localhost',
-      '127.0.0.1'
-    ],
+    allowedHosts: ['domicare.cloud.hnagnurtme.id.vn', 'localhost', '127.0.0.1'],
     hmr: {
       host: 'domicare.cloud.hnagnurtme.id.vn',
       protocol: 'ws'

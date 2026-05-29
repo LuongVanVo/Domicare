@@ -69,5 +69,9 @@
     "success_rate": "Tỷ lệ thành công",
     "active": "Hoạt động",
     "inactive": "Ngừng hoạt động"
+  },
+  "booking": {
+    "edit_booking": "Chỉnh sửa đơn đặt lịch",
+    "update_booking_description": "Cập nhật thông tin chi tiết cho đơn đặt lịch của khách hàng tại đây."
   }
 }

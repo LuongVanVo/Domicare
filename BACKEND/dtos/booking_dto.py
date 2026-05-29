@@ -18,6 +18,9 @@ class BookingDTO(BaseModel):
     is_periodic: Optional[bool] = Field(None, alias='isPeriodic')
     booking_status: Optional[str] = Field(None, alias='bookingStatus')
     phone: Optional[str] = None
+    refund_bank_name: Optional[str] = Field(None, alias='refundBankName')
+    refund_account_number: Optional[str] = Field(None, alias='refundAccountNumber')
+    refund_account_holder: Optional[str] = Field(None, alias='refundAccountHolder')
 
     # Audit fields
     create_by: Optional[str] = Field(None, alias='createBy')

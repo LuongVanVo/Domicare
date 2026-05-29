@@ -38,7 +38,7 @@ const HomePage = () => {
     if (access_token && refresh_token && !processedRef.current) {
       processedRef.current = true
       console.log('🔐 OAuth tokens received in HomePage')
-      
+
       setAccessTokenToLS(access_token as string)
       setRefreshTokenToLS(refresh_token as string)
       getMeMutation.mutate()
@@ -47,9 +47,9 @@ const HomePage = () => {
 
   useEffect(() => {
     if (getMeMutation.isSuccess) {
-      Toast.success({ 
-        title: 'Thành công', 
-        description: 'Đăng nhập với Google thành công! 🚀⚡' 
+      Toast.success({
+        title: 'Thành công',
+        description: 'Đăng nhập với Google thành công! 🚀⚡'
       })
       // Reload page để cập nhật context
       setTimeout(() => {
@@ -60,12 +60,12 @@ const HomePage = () => {
 
   useEffect(() => {
     if (getMeMutation.isError) {
-      Toast.error({ 
-        description: 'Không thể lấy thông tin người dùng!' 
+      Toast.error({
+        description: 'Không thể lấy thông tin người dùng!'
       })
     }
   }, [getMeMutation.isError])
-  
+
   const handleBooking = () => {
     navigate({ pathname: path.products })
   }

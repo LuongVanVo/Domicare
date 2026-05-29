@@ -73,5 +73,9 @@
     "success_rate": "Success rate",
     "active": "Active",
     "inactive": "Inactive"
+  },
+  "booking": {
+    "edit_booking": "Edit Booking",
+    "update_booking_description": "Update detailed information for the customer's booking here."
   }
 }

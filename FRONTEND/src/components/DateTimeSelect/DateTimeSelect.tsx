@@ -26,10 +26,10 @@ export default function DateTimeSelect({ onChange, value, errorMessage }: DateSe
 
   useEffect(() => {
     if (isValidDate(value)) {
-      setDate({ 
-        day: value.getDate(), 
-        month: value.getMonth(), 
-        year: value.getFullYear() 
+      setDate({
+        day: value.getDate(),
+        month: value.getMonth(),
+        year: value.getFullYear()
       })
     }
   }, [value])
@@ -37,22 +37,22 @@ export default function DateTimeSelect({ onChange, value, errorMessage }: DateSe
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const { value, name } = event.target
     const numValue = Number(value)
-    
+
     // Kiểm tra nếu conversion thất bại
     if (isNaN(numValue)) {
       console.error('Invalid number value:', value)
       return
     }
-    
+
     const newDate = {
       ...date,
       [name]: numValue
     }
-    
+
     setDate(newDate)
     onChange?.(new Date(newDate.year, newDate.month, newDate.day))
   }
-  
+
   return (
     <Fragment>
       <div className='flex flex-nowrap mt-1 mb-0'>
@@ -73,7 +73,7 @@ export default function DateTimeSelect({ onChange, value, errorMessage }: DateSe
               </option>
             ))}
           </select>
-          
+
           <select
             name='month'
             onChange={handleChange}
@@ -90,7 +90,7 @@ export default function DateTimeSelect({ onChange, value, errorMessage }: DateSe
               </option>
             ))}
           </select>
-          
+
           <select
             name='year'
             onChange={handleChange}

@@ -6,7 +6,7 @@ import { ICON_SIZE_EXTRA } from '@/configs/icon-size'
 import { AppContext } from '@/core/contexts/app.context'
 import { ChatSchema } from '@/core/zod/chat.zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { MessageSquare, Send, ArrowLeft, CreditCard, Sparkles } from 'lucide-react'
+import { MessageSquare, Send, ArrowLeft, CreditCard, Sparkles, RotateCcw } from 'lucide-react'
 import { useContext, useEffect, useRef, useState, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -14,6 +14,7 @@ import { Form, FormControl, FormField, FormItem } from '../ui/form'
 import { useGetConversationByReceiverId } from '@/core/queries/chat.query'
 import { Conversation, Cursor } from '@/models/interface/chat.interface'
 import MessageChat from '../MessageChat'
+import { RefundDialog } from '../RefundDialog'
 import { useWebSocket } from '@/hooks/useWebSocket'
 import { rolesCheck } from '@/utils/rolesCheck'
 import { chatApi } from '@/core/services/chat.service'
@@ -28,9 +29,10 @@ export function Chat() {
   const cursorRef = useRef<Cursor>({ last_message_id: '', last_updated_at: '' })
   const chatMutation = useGetConversationByReceiverId()
   const { profile } = useContext(AppContext)
-  
+
   // Sheet open state
   const [isOpen, setIsOpen] = useState(false)
+  const [isRefundOpen, setIsRefundOpen] = useState(false)
 
   // Roles check
   const isStaff = useMemo(() => {
@@ -39,7 +41,7 @@ export function Chat() {
 
   // Selected customer for admin/sales chat
   const [selectedReceiver, setSelectedReceiver] = useState<{ id: string; name: string } | null>(null)
-  
+
   // Mapped booking for display
   const [associatedBooking, setAssociatedBooking] = useState<Booking | null>(null)
   const [selectedUserBooking, setSelectedUserBooking] = useState<Booking | null>(null)
@@ -50,7 +52,8 @@ export function Chat() {
   // Load conversations list for admin/sales
   const loadConversations = () => {
     if (isStaff) {
-      chatApi.query({})
+      chatApi
+        .query({})
         .then((res) => {
           setConversationsList(res.data.data || [])
         })
@@ -86,7 +89,8 @@ export function Chat() {
   // Staff Mode: Query customer's latest booking if selected from list
   useEffect(() => {
     if (isStaff && selectedReceiver?.id && !associatedBooking) {
-      bookingApi.query({ page: 1, size: 1, userId: Number(selectedReceiver.id) })
+      bookingApi
+        .query({ page: 1, size: 1, userId: Number(selectedReceiver.id) })
         .then((res) => {
           setSelectedUserBooking(res.data.data.data?.[0] || null)
         })
@@ -253,9 +257,7 @@ export function Chat() {
             </SheetHeader>
             <div className='flex-1 overflow-y-auto p-2 space-y-2'>
               {conversationsList.length === 0 ? (
-                <div className='text-center py-10 text-slate-400 text-sm'>
-                  Chưa có cuộc trò chuyện nào.
-                </div>
+                <div className='text-center py-10 text-slate-400 text-sm'>Chưa có cuộc trò chuyện nào.</div>
               ) : (
                 conversationsList.map((conv) => (
                   <div
@@ -274,12 +276,13 @@ export function Chat() {
                         {conv.receiver.name || conv.receiver.email}
                       </span>
                       <span className='text-[10px] text-slate-400'>
-                        {new Date(conv.last_message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(conv.last_message.created_at).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                       </span>
                     </div>
-                    <p className='text-xs text-slate-500 truncate'>
-                      {conv.last_message.message}
-                    </p>
+                    <p className='text-xs text-slate-500 truncate'>{conv.last_message.message}</p>
                   </div>
                 ))
               )}
@@ -308,8 +311,8 @@ export function Chat() {
             </SheetHeader>
 
             {/* Premium Booking Details Banner */}
-            {activeBooking && (
-              isFullyPaid ? (
+            {activeBooking &&
+              (isFullyPaid ? (
                 <div className='bg-gradient-to-r from-emerald-50 to-emerald-100/30 border-b border-emerald-200/50 p-3 flex flex-col gap-2'>
                   <div className='flex justify-between items-center text-xs'>
                     <span className='text-slate-600 font-medium'>Đơn hàng #{activeBooking.id}</span>
@@ -324,6 +327,18 @@ export function Chat() {
                         Đã thanh toán đầy đủ ({formatCurrentcy(Number(activeBooking.totalPrice))})
                       </span>
                     </div>
+                    {Number(activeBooking.amountPaid || 0) > 0 &&
+                      ['ACCEPTED', 'PENDING', 'PROCESSING'].includes(activeBooking.bookingStatus || '') && (
+                        <Button
+                          size='sm'
+                          variant='outline'
+                          onClick={() => setIsRefundOpen(true)}
+                          className='border-emerald-300 hover:bg-emerald-50 text-emerald-700 font-bold text-xs gap-1.5 rounded-lg py-1 px-3 shadow-sm'
+                        >
+                          <RotateCcw size={13} />
+                          Yêu cầu hoàn tiền
+                        </Button>
+                      )}
                   </div>
                 </div>
               ) : (
@@ -341,20 +356,35 @@ export function Chat() {
                         {formatCurrentcy(Number(activeBooking.totalPrice) - Number(activeBooking.amountPaid || 0))}
                       </span>
                     </div>
-                    {!isStaff && Number(activeBooking.amountPaid || 0) < Number(activeBooking.totalPrice) && ['PENDING', 'ACCEPTED', 'PROCESSING'].includes(activeBooking.bookingStatus || '') && (
-                      <Button
-                        size='sm'
-                        onClick={handlePayRemaining}
-                        className='bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs gap-1.5 rounded-lg py-1 px-3 shadow-sm transition animate-pulse'
-                      >
-                        <CreditCard size={13} />
-                        Thanh toán nốt
-                      </Button>
-                    )}
+                    <div className='flex gap-1.5'>
+                      {Number(activeBooking.amountPaid || 0) > 0 &&
+                        ['PENDING', 'ACCEPTED', 'PROCESSING'].includes(activeBooking.bookingStatus || '') && (
+                          <Button
+                            size='sm'
+                            variant='outline'
+                            onClick={() => setIsRefundOpen(true)}
+                            className='border-amber-300 hover:bg-amber-50 text-amber-700 font-bold text-xs gap-1.5 rounded-lg py-1 px-3 shadow-sm hover:text-amber-800 hover:border-amber-400'
+                          >
+                            <RotateCcw size={13} />
+                            Hoàn tiền
+                          </Button>
+                        )}
+                      {!isStaff &&
+                        Number(activeBooking.amountPaid || 0) < Number(activeBooking.totalPrice) &&
+                        ['PENDING', 'ACCEPTED', 'PROCESSING'].includes(activeBooking.bookingStatus || '') && (
+                          <Button
+                            size='sm'
+                            onClick={handlePayRemaining}
+                            className='bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs gap-1.5 rounded-lg py-1 px-3 shadow-sm transition animate-pulse'
+                          >
+                            <CreditCard size={13} />
+                            Thanh toán nốt
+                          </Button>
+                        )}
+                    </div>
                   </div>
                 </div>
-              )
-            )}
+              ))}
 
             <div className='flex-1 min-h-0 bg-slate-50'>
               <MessageChat
@@ -365,7 +395,7 @@ export function Chat() {
                 onDeleteMessage={handleDeleteMessage}
               />
             </div>
-            
+
             <SheetFooter className='p-3 border-t bg-white'>
               <Form {...form}>
                 <form
@@ -382,18 +412,27 @@ export function Chat() {
                     render={({ field }) => (
                       <FormItem className='flex-grow'>
                         <FormControl>
-                          <Input className='focus:outline-0 mt-0 h-10 rounded-xl bg-slate-50 border-slate-200' placeholder='Nhập tin nhắn...' type='text' {...field} />
+                          <Input
+                            className='focus:outline-0 mt-0 h-10 rounded-xl bg-slate-50 border-slate-200'
+                            placeholder='Nhập tin nhắn...'
+                            type='text'
+                            {...field}
+                          />
                         </FormControl>
                       </FormItem>
                     )}
                   />
 
-                  <Button type='submit' className='h-10 w-10 p-0 rounded-xl bg-emerald-500 hover:bg-emerald-600 transition-colors duration-200'>
+                  <Button
+                    type='submit'
+                    className='h-10 w-10 p-0 rounded-xl bg-emerald-500 hover:bg-emerald-600 transition-colors duration-200'
+                  >
                     <Send size={16} />
                   </Button>
                 </form>
               </Form>
             </SheetFooter>
+            <RefundDialog isOpen={isRefundOpen} onClose={() => setIsRefundOpen(false)} booking={activeBooking} />
           </div>
         )}
       </SheetContent>

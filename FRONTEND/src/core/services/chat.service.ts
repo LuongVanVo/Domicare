@@ -12,5 +12,8 @@ export const chatApi = {
   },
   deleteMessage: (messageId: string) => {
     return axiosClient.delete<SuccessResponse<null>>(`/conversations/messages/${messageId}`)
+  },
+  sendMessage: (receiverId: string, message: string) => {
+    return axiosClient.post<SuccessResponse<any>>('/conversations/messages', { receiverId, message })
   }
 }

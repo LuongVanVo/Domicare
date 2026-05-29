@@ -23,7 +23,7 @@ export const useBookingColumns = (): ColumnDef<Booking>[] => {
     successMessage: t('toast:accept_booking_success')
   })
   const handleRejectBooking = useUpdateSttBookingMutation({
-    successMessage: t('booking.reject_booking_success')
+    successMessage: t('toast:reject_booking_success')
   })
   return [
     {
@@ -76,7 +76,10 @@ export const useBookingColumns = (): ColumnDef<Booking>[] => {
         return (
           <div className='flex items-center gap-1.5'>
             {amountPaid > 0 && (
-              <span className='bg-amber-500 text-white text-[9px] px-1 rounded font-bold' title='Đơn hàng ưu tiên (đã cọc)'>
+              <span
+                className='bg-amber-500 text-white text-[9px] px-1 rounded font-bold'
+                title='Đơn hàng ưu tiên (đã cọc)'
+              >
                 ⭐ ƯU TIÊN
               </span>
             )}

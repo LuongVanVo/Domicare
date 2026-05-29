@@ -1,7 +1,13 @@
 import config from '@/configs'
 
 import { SuccessResponse } from '@/models/interface/response.interface'
-import { clearLS, getAccessTokenFromLS, getRefreshTokenFromLS, setAccessTokenToLS, setRefreshTokenToLS } from '@/utils/storage'
+import {
+  clearLS,
+  getAccessTokenFromLS,
+  getRefreshTokenFromLS,
+  setAccessTokenToLS,
+  setRefreshTokenToLS
+} from '@/utils/storage'
 import axios, {
   AxiosError,
   AxiosInstance,
@@ -78,12 +84,8 @@ axiosClient.interceptors.response.use(
     const isUnauthorized = error.response?.status === 401
     const isForbidden = error.response?.status === 403
     const isTokenExpired = errorMessage.includes('expired') || errorMessage.includes('token')
-    
-    if (
-      error.response && 
-      (isUnauthorized || (isForbidden && isTokenExpired)) && 
-      !originalRequest._retry
-    ) {
+
+    if (error.response && (isUnauthorized || (isForbidden && isTokenExpired)) && !originalRequest._retry) {
       if (!isRefreshing) {
         originalRequest._retry = true
         isRefreshing = true
@@ -97,17 +99,15 @@ axiosClient.interceptors.response.use(
             return Promise.reject(error)
           }
 
-
-          const response = await axios.post<SuccessResponse<TokenResponse>>(
-            `${config.baseUrl}/auth/refresh-token`,
-            { refresh_token: refreshToken }
-          )
+          const response = await axios.post<SuccessResponse<TokenResponse>>(`${config.baseUrl}/auth/refresh-token`, {
+            refresh_token: refreshToken
+          })
 
           if (isEqual(response.status, HttpStatusCode.Ok)) {
             const { access_token, refresh_token } = response.data.data
 
             setAccessTokenToLS(access_token)
-            
+
             if (refresh_token) {
               setRefreshTokenToLS(refresh_token)
             }
@@ -140,7 +140,7 @@ axiosClient.interceptors.response.use(
             }
             resolve(axiosClient(originalRequest))
           })
-          
+
           setTimeout(() => {
             reject(new Error('Refresh token timeout'))
           }, 10000)

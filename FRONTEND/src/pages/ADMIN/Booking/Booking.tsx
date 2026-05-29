@@ -49,11 +49,7 @@ function BookingContent() {
             data={bookingList || []}
             searchKey='searchName'
             DataTablePagination={
-              <DataTablePagination
-                pageController={pageController}
-                path={basePath}
-                queryString={queryString}
-              />
+              <DataTablePagination pageController={pageController} path={basePath} queryString={queryString} />
             }
             ButtonAction={<BookingButtonAction />}
           />

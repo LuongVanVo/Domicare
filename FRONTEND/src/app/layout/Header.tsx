@@ -27,10 +27,7 @@ export default function Header() {
         >
           <Bell className='!w-5 h-auto' />
         </Link>
-        <Link
-          className='duration-300 h-8 md:h-12  gap-2 flex justify-center items-center'
-          to={profilePath}
-        >
+        <Link className='duration-300 h-8 md:h-12  gap-2 flex justify-center items-center' to={profilePath}>
           <Avatar>
             <AvatarImage src={profile?.avatar} alt={profile?.name} />
             <AvatarFallback>CC</AvatarFallback>

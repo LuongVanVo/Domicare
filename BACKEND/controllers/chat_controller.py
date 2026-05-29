@@ -206,3 +206,60 @@ def delete_message(request: Request, message_id: str):
             message="Failed to delete message",
             status=http_status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def send_message(request: Request):
+    """
+    POST /api/v1/conversations/messages
+    Send a chat message via HTTP REST and broadcast it over WebSocket groups.
+    """
+    try:
+        current_user = request.user
+        receiver_id_str = request.data.get('receiverId')
+        message_text = request.data.get('message')
+
+        if not receiver_id_str or not message_text:
+            return RestResponse.error(
+                message="Missing receiverId or message body",
+                status=http_status.HTTP_400_BAD_REQUEST
+            )
+
+        from consumers.domicare_consumer import save_chat_message
+        from asgiref.sync import async_to_sync
+        
+        # Save to database (uses consumer helper)
+        message_data = async_to_sync(save_chat_message)(current_user, str(receiver_id_str), message_text)
+        
+        if message_data:
+            from channels.layers import get_channel_layer
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                # Send to receiver group
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{message_data['receiver_id']}",
+                    {
+                        "type": "chat_message",
+                        "data": message_data
+                    }
+                )
+                # Send to sender group (to sync multiple tabs)
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{current_user.id}",
+                    {
+                        "type": "chat_message",
+                        "data": message_data
+                    }
+                )
+            return RestResponse.success(data=message_data)
+        else:
+            return RestResponse.error(
+                message="Failed to deliver message",
+                status=http_status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    except Exception as e:
+        logger.error(f"[Chat Controller] Error sending REST message: {e}")
+        return RestResponse.error(
+            message="Failed to send message",
+            status=http_status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

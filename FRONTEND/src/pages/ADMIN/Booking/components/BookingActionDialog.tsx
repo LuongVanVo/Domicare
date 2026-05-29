@@ -40,6 +40,7 @@ import { initialParams } from '@/core/constants/initialValue.const'
 import Pagination from '@/components/Pagination'
 import { Product } from '@/models/interface/product.interface'
 import { useTranslation } from 'react-i18next'
+import { useLocation } from 'react-router-dom'
 
 interface Props {
   currentRow: Booking
@@ -48,6 +49,10 @@ interface Props {
 }
 
 export function BookingActionDialog({ currentRow, open, onOpenChange }: Props) {
+  const location = useLocation()
+  const isSaleRoute = location.pathname.startsWith('/sale')
+  const basePath = isSaleRoute ? path.sale.booking : path.admin.booking
+
   const queryString = useBookingQueryConfig({})
   const queryClient = useQueryClient()
   const [params, setParams] = useState<QueryPrdConfig>(initialParams)
@@ -73,16 +78,20 @@ export function BookingActionDialog({ currentRow, open, onOpenChange }: Props) {
 
   const updateBookingMutation = useUpdateBookingMutation()
 
+  const isStatusSelectDisabled = [BookingStatus.SUCCESS, BookingStatus.FAILED, BookingStatus.CANCELLED].includes(
+    currentRow.bookingStatus as any
+  )
+
   const onSubmit = async (formData: ActionBookingForm) => {
     try {
       const dataApi = {
         ...formData,
         startTime: formData.startTime.toISOString(),
         bookingId: currentRow.id,
-        isPeriodic: isEqual(currentRow.isPeriodic, 'true') ? true : false
+        isPeriodic: currentRow.isPeriodic
       }
       await updateBookingMutation.mutateAsync(dataApi as BookingUpdateRequest)
-      queryClient.invalidateQueries({ queryKey: [path.admin.booking, queryString] })
+      queryClient.invalidateQueries({ queryKey: [basePath, queryString] })
     } catch (error) {
       console.error(error)
     } finally {
@@ -230,18 +239,23 @@ export function BookingActionDialog({ currentRow, open, onOpenChange }: Props) {
                     <FormItem className='flex items-center gap-4'>
                       <FormLabel className='mt-2'>{t('auth:service_type')}</FormLabel>
                       <FormControl>
-                        <RadioGroup onValueChange={field.onChange} value={field.value} className='flex'>
+                        <RadioGroup
+                          disabled
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          className='flex cursor-not-allowed opacity-80'
+                        >
                           <FormItem className='flex items-center space-x-3 space-y-0'>
                             <FormControl>
-                              <RadioGroupItem value={isPeriodic.oneTime} />
+                              <RadioGroupItem value={isPeriodic.oneTime} disabled />
                             </FormControl>
-                            <FormLabel className='cursor-pointer'>{t('auth:one_time')}</FormLabel>
+                            <FormLabel className='cursor-not-allowed'>{t('auth:one_time')}</FormLabel>
                           </FormItem>
                           <FormItem className='flex items-center space-x-3 space-y-0'>
                             <FormControl>
-                              <RadioGroupItem value={isPeriodic.month} />
+                              <RadioGroupItem value={isPeriodic.month} disabled />
                             </FormControl>
-                            <FormLabel className='cursor-pointer'>{t('auth:periodic')}</FormLabel>
+                            <FormLabel className='cursor-not-allowed'>{t('auth:periodic')}</FormLabel>
                           </FormItem>
                         </RadioGroup>
                       </FormControl>
@@ -258,7 +272,11 @@ export function BookingActionDialog({ currentRow, open, onOpenChange }: Props) {
                     render={({ field }) => (
                       <FormItem className='w-1/2'>
                         <FormLabel>Trạng thái</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          disabled={isStatusSelectDisabled}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder='Chọn trạng thái' />
@@ -266,17 +284,23 @@ export function BookingActionDialog({ currentRow, open, onOpenChange }: Props) {
                           </FormControl>
                           <SelectContent>
                             <SelectItem value={BookingStatus.PENDING}>{t('product:booking_status.pending')}</SelectItem>
-                            <SelectItem value={BookingStatus.CANCELLED}>
-                              {t('product:booking_status.cancelled')}
+                            <SelectItem value={BookingStatus.ACCEPTED}>
+                              {t('product:booking_status.accepted')}
                             </SelectItem>
                             <SelectItem value={BookingStatus.REJECTED}>
                               {t('product:booking_status.rejected')}
                             </SelectItem>
-                            <SelectItem value={BookingStatus.ACCEPTED}>
-                              {t('product:booking_status.accepted')}
+                            <SelectItem value={BookingStatus.CANCELLED}>
+                              {t('product:booking_status.cancelled')}
                             </SelectItem>
-                            <SelectItem value={BookingStatus.SUCCESS}>{t('product:booking_status.success')}</SelectItem>
-                            <SelectItem value={BookingStatus.FAILED}>{t('product:booking_status.failed')}</SelectItem>
+                            {currentRow.bookingStatus === BookingStatus.SUCCESS && (
+                              <SelectItem value={BookingStatus.SUCCESS}>
+                                {t('product:booking_status.success')}
+                              </SelectItem>
+                            )}
+                            {currentRow.bookingStatus === BookingStatus.FAILED && (
+                              <SelectItem value={BookingStatus.FAILED}>{t('product:booking_status.failed')}</SelectItem>
+                            )}
                           </SelectContent>
                         </Select>
                         <FormMessage />
