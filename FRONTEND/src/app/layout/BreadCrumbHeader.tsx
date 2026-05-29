@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/breadcrumb'
 import { useBreadcrumbConfig, BreadcrumbKey } from '@/core/constants/breadcrumb.const'
 import { Link, useLocation } from 'react-router-dom'
+import { path } from '@/core/constants/path'
 
 interface BreadcrumbItemType {
   label: string
@@ -17,7 +18,13 @@ export function BreadcrumbHeader() {
   const { pathname } = useLocation()
   const pathSegments = pathname.split('/').filter(Boolean)
   const breadcrumbConfig = useBreadcrumbConfig()
-  const breadcrumbs: BreadcrumbItemType[] = pathSegments.map((item: string) => {
+  const breadcrumbs: BreadcrumbItemType[] = pathSegments.map((item: string, idx: number) => {
+    if (item === 'sale' && idx === 0) {
+      return {
+        label: breadcrumbConfig.dashboard.label,
+        href: path.sale.dashboard
+      }
+    }
     const config = breadcrumbConfig[item as BreadcrumbKey]
     if (config) {
       return {

@@ -6,6 +6,7 @@ import { AppContext } from '@/core/contexts/app.context'
 import { useBookingQueryConfig } from '@/hooks/useBookingQueryConfig'
 import { useBookingWebSocket } from '@/hooks/useBookingWebSocket'
 import { Fragment, ReactNode, useContext } from 'react'
+import Chat from '@/components/Chat'
 
 interface CustomerLayoutProps {
   children?: ReactNode
@@ -21,6 +22,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
       <Helmet />
       <Header />
       {children}
+      {profile && <Chat />}
       <Footer />
     </Fragment>
   )

@@ -33,8 +33,12 @@ const initialAppContext: AppContextInterface = {
 export const AppContext = createContext<AppContextInterface>(initialAppContext)
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
-  const [profile, setProfile] = useState<User | null>(null)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return typeof window !== 'undefined' ? Boolean(getAccessTokenFromLS()) : false
+  })
+  const [profile, setProfile] = useState<User | null>(() => {
+    return typeof window !== 'undefined' ? getUserFromLocalStorage() : null
+  })
   const [categories, setCategories] = useState<Category[] | null>(null)
 
   const { data } = useCategoryQuery({ queryString: undefined })

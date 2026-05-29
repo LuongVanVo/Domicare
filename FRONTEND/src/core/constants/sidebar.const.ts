@@ -27,8 +27,8 @@ export const useSidebarItems = (): Sidebar => {
 
   const createSaleOrderUrl = () => {
     const user = getUserFromLocalStorage()
-    if (!user?.id) return path.admin.booking
-    return `${path.admin.booking}?saleId=${user.id}`
+    if (!user?.id) return path.sale.booking
+    return `${path.sale.booking}?saleId=${user.id}`
   }
 
   return {
@@ -78,12 +78,12 @@ export const useSidebarItems = (): Sidebar => {
     ROLE_SALE: [
       {
         title: t('sidebar.dashboard'),
-        url: path.admin.dashboard,
+        url: path.sale.dashboard,
         icon: ChartNoAxesCombined
       },
       {
         title: t('sidebar.all_order'),
-        url: path.admin.booking,
+        url: path.sale.booking,
         icon: LayoutDashboard
       },
       {
@@ -93,12 +93,12 @@ export const useSidebarItems = (): Sidebar => {
       },
       {
         title: t('sidebar.settings'),
-        url: path.admin.setting.profile,
+        url: path.sale.setting.profile,
         icon: Settings,
         isActive: true,
         items: [
-          { title: t('sidebar.profile'), url: path.admin.setting.profile },
-          { title: t('sidebar.system'), url: path.admin.setting.system }
+          { title: t('sidebar.profile'), url: path.sale.setting.profile },
+          { title: t('sidebar.system'), url: path.sale.setting.system }
         ]
       }
     ]

@@ -11,8 +11,7 @@ import { cn } from '@/core/lib/utils'
 import { STANDARD_DATE_FORMAT_INVERSE } from '@/configs/consts'
 import dayjs from 'dayjs'
 import { formatDateTime } from '@/core/helpers/date-time'
-import { createSearchParams, useNavigate } from 'react-router-dom'
-import { path } from '@/core/constants/path'
+import { createSearchParams, useNavigate, useLocation } from 'react-router-dom'
 import { OverviewQueryConfig } from '@/hooks/useOverviewQueryConfig'
 import { useTranslation } from 'react-i18next'
 
@@ -28,6 +27,7 @@ export function DateRangePicker({ className, queryString }: DateRangePickerProps
   const [date, setDate] = useState<DateRange | undefined>(initialDateRange)
   const { t } = useTranslation(['admin'])
   const navigate = useNavigate()
+  const location = useLocation()
   const handleChangeDate = (range: DateRange) => {
     setDate(range)
   }
@@ -40,7 +40,7 @@ export function DateRangePicker({ className, queryString }: DateRangePickerProps
   }, [queryString])
   const handleQuery = () => {
     navigate({
-      pathname: path.admin.dashboard,
+      pathname: location.pathname,
       search: createSearchParams({
         ...queryString,
         endDate: date?.to ? date.to.toISOString() : new Date().toISOString(),

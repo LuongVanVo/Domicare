@@ -17,6 +17,7 @@ export function SaleOverview({ queryString }: SaleOverviewProps) {
   const queryFn = overviewApi.getTopSale
   const { t } = useTranslation(['admin'])
   const { data, isLoading } = useOverviewQuery<MiniSale[]>({ queryString, queryFn })
+  const salesList = data?.data || []
   const startDate = queryString?.startDate ? new Date(queryString?.startDate) : new Date()
   const endDate = queryString?.endDate ? new Date(queryString?.endDate) : new Date()
 
@@ -43,13 +44,13 @@ export function SaleOverview({ queryString }: SaleOverviewProps) {
                 </div>
               ))}
             </>
-          ) : data?.data.length === 0 ? (
+          ) : salesList.length === 0 ? (
             <div className='flex flex-col justify-center items-center pt-5'>
               <img className='w-auto h-32' src={noPrdImg} alt='no_product' />
               <p className='text-muted-foreground'>{t('admin:chart.no_top_sale')}</p>
             </div>
           ) : (
-            data?.data.map((sale) => (
+            salesList.map((sale) => (
               <div className='flex items-center' key={sale.id}>
                 <Avatar className='size-9'>
                   <AvatarImage src={sale?.avatar} alt='Avatar' />

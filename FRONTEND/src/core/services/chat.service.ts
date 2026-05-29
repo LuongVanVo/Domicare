@@ -9,5 +9,8 @@ export const chatApi = {
   },
   getByReceiverId: ({ params, receiverId }: { params: ConversationListConfig; receiverId: string }) => {
     return axiosClient.get<SuccessResponse<ConversationResponse>>(`${API_CHAT_URL}/${receiverId}`, { params })
+  },
+  deleteMessage: (messageId: string) => {
+    return axiosClient.delete<SuccessResponse<null>>(`/conversations/messages/${messageId}`)
   }
 }

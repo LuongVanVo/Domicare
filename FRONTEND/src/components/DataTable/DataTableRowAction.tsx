@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 
-import { Ellipsis, Eye, Headset, Key, MessageCircleX, SquarePen, Trash2 } from 'lucide-react'
+import { Ellipsis, Eye, Headset, Key, MessageCircleX, MessageSquare, SquarePen, Trash2 } from 'lucide-react'
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>
@@ -20,6 +20,7 @@ interface DataTableRowActionsProps<TData> {
   onReset?: (row: TData) => void
   onAccepted?: (row: TData) => void
   onRejected?: (row: TData) => void
+  onChat?: (row: TData) => void
 }
 
 export function DataTableRowActions<TData>({
@@ -29,7 +30,8 @@ export function DataTableRowActions<TData>({
   onReset,
   onView,
   onAccepted,
-  onRejected
+  onRejected,
+  onChat
 }: DataTableRowActionsProps<TData>) {
   return (
     <DropdownMenu modal={false}>
@@ -45,6 +47,14 @@ export function DataTableRowActions<TData>({
             Xem chi tiết
             <DropdownMenuShortcut>
               <Eye size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+        )}
+        {onChat && (
+          <DropdownMenuItem onClick={() => onChat(row.original)}>
+            Nhắn tin
+            <DropdownMenuShortcut>
+              <MessageSquare size={16} />
             </DropdownMenuShortcut>
           </DropdownMenuItem>
         )}

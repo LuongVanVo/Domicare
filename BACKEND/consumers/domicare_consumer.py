@@ -26,8 +26,28 @@ def is_admin_or_sale(user):
 def save_chat_message(sender, receiver_id_str, message_text):
     """Asynchronously save a new chat message to the database"""
     try:
+        from django.db.models import Q
         receiver_id = int(receiver_id_str)
-        receiver = User.objects.get(id=receiver_id)
+        
+        # If customer sends message to themselves (default UI behavior), map to Sale agent or Admin
+        if receiver_id == sender.id:
+            # First, check if there is an existing message exchange with another user
+            last_message = Message.objects.filter(
+                Q(sender=sender) | Q(receiver=sender)
+            ).exclude(sender=sender, receiver=sender).order_by('-created_at').first()
+
+            if last_message:
+                receiver = last_message.receiver if last_message.sender == sender else last_message.sender
+            else:
+                from models.booking import Booking
+                latest_booking = Booking.objects.filter(user=sender, sale_user__isnull=False).order_by('-create_at').first()
+                if latest_booking:
+                    receiver = latest_booking.sale_user
+                else:
+                    receiver = User.objects.filter(roles__name='ROLE_ADMIN').first() or User.objects.first()
+        else:
+            receiver = User.objects.get(id=receiver_id)
+
         message = Message.objects.create(
             sender=sender,
             receiver=receiver,
@@ -123,7 +143,7 @@ class DomicareConsumer(AsyncJsonWebsocketConsumer):
             if message_data:
                 # Send to receiver's group
                 await self.channel_layer.group_send(
-                    f"user_{receiver_id}",
+                    f"user_{message_data['receiver_id']}",
                     {
                         "type": "chat_message",
                         "data": message_data
@@ -152,6 +172,13 @@ class DomicareConsumer(AsyncJsonWebsocketConsumer):
         """Handler for events sent via channel layer with type='chat_message'"""
         await self.send_json({
             "type": "chat_message",
+            "data": event["data"]
+        })
+
+    async def chat_message_delete(self, event):
+        """Handler for message deletion events"""
+        await self.send_json({
+            "type": "chat_message_delete",
             "data": event["data"]
         })
 

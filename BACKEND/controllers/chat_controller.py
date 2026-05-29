@@ -137,3 +137,72 @@ def get_conversation_with_receiver(request: Request, receiver_id: str):
             message="Failed to load message history",
             status=http_status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_message(request: Request, message_id: str):
+    """
+    DELETE /api/v1/conversations/messages/<message_id>
+    Delete a message sent by the current user.
+    """
+    try:
+        current_user = request.user
+        try:
+            msg_id = int(message_id)
+        except ValueError:
+            return RestResponse.error(
+                message="Invalid message ID format",
+                status=http_status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            message = Message.objects.get(id=msg_id)
+        except Message.DoesNotExist:
+            return RestResponse.error(
+                message="Message not found",
+                status=http_status.HTTP_404_NOT_FOUND
+            )
+
+        # Only the sender can delete their message
+        if message.sender_id != current_user.id:
+            return RestResponse.error(
+                message="You are not authorized to delete this message",
+                status=http_status.HTTP_403_FORBIDDEN
+            )
+
+        receiver_id = message.receiver_id
+        sender_id = message.sender_id
+        message.delete()
+
+        # Broadcast deletion to receiver and sender over channels
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        channel_layer = get_channel_layer()
+        if channel_layer:
+            broadcast_data = {
+                "message_id": str(msg_id)
+            }
+            # Send to receiver group
+            async_to_sync(channel_layer.group_send)(
+                f"user_{receiver_id}",
+                {
+                    "type": "chat_message_delete",
+                    "data": broadcast_data
+                }
+            )
+            # Send to sender group
+            async_to_sync(channel_layer.group_send)(
+                f"user_{sender_id}",
+                {
+                    "type": "chat_message_delete",
+                    "data": broadcast_data
+                }
+            )
+
+        return RestResponse.success(message="Message deleted successfully")
+    except Exception as e:
+        logger.error(f"[Chat Controller] Error deleting message {message_id}: {e}")
+        return RestResponse.error(
+            message="Failed to delete message",
+            status=http_status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

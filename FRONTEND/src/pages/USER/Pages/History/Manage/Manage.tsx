@@ -7,6 +7,8 @@ import { urlSEO } from '@/utils/urlSEO'
 import { useQueryClient } from '@tanstack/react-query'
 import isEqual from 'lodash/isEqual'
 import { useNavigate } from 'react-router-dom'
+import axiosClient from '@/core/services/axios-client'
+import { CreditCard } from 'lucide-react'
 
 interface ManaegeProps {
   booking: Booking
@@ -47,8 +49,34 @@ export default function Manage({ booking, queryString }: ManaegeProps) {
       }
     )
   }
+  const handlePayRemaining = async () => {
+    try {
+      const remainingAmount = Number(booking.totalPrice) - Number(booking.amountPaid || 0)
+      if (remainingAmount <= 0) return
+
+      const response = await axiosClient.post('/payment/create-payment', {
+        amount: remainingAmount,
+        orderInfo: `Thanh toán còn lại cho Đơn hàng #${booking.id}`,
+        orderId: String(booking.id)
+      })
+
+      const paymentURL = response.data.data.paymentUrl
+      window.open(paymentURL, '_blank')
+    } catch (error) {
+      console.error('Error initiating remaining payment:', error)
+    }
+  }
   return (
     <div className='flex justify-end items-center pt-1.5 gap-2'>
+      {isEqual(booking.bookingStatus, BookingStatus.ACCEPTED) && Number(booking.amountPaid || 0) < Number(booking.totalPrice) && (
+        <Button
+          onClick={handlePayRemaining}
+          className='text-white bg-amber-600 hover:bg-amber-700 font-bold flex items-center gap-1.5 cursor-pointer animate-pulse'
+        >
+          <CreditCard size={15} />
+          Thanh toán nốt
+        </Button>
+      )}
       {isEqual(booking.bookingStatus, BookingStatus.PENDING) && (
         <Button
           onClick={handleCancle}

@@ -1,4 +1,4 @@
-﻿from dtos.booking_dto import BookingDTO
+from dtos.booking_dto import BookingDTO
 from dtos.responses.mini_booking_response import MiniBookingResponse, UserMini
 from mappers.product_mapper import ProductMapper
 from mappers.user_mapper import UserMapper
@@ -26,6 +26,7 @@ class BookingMapper:
             id=booking.id,
             address=booking.address,
             totalPrice=booking.total_price,
+            amountPaid=booking.amount_paid,
             note=booking.note,
             startTime=booking.start_time,
             products=products_dto,
@@ -77,6 +78,7 @@ class BookingMapper:
             id=booking.id,
             address=booking.address,
             totalPrice=booking.total_price,
+            amountPaid=booking.amount_paid,
             note=booking.note,
             startTime=booking.start_time,
             products=products_mini,

@@ -55,7 +55,16 @@ interface RouteConfig {
 function ProtectedRouteAdmin() {
   //admin
   const { isAuthenticated, profile } = useContext(AppContext)
-  if (profile?.roles && rolesCheck.isAdminOrSale(profile.roles) && isAuthenticated) {
+  if (profile?.roles && rolesCheck.isAdmin(profile.roles) && isAuthenticated) {
+    return <Outlet />
+  }
+  return <Navigate to={path.login} />
+}
+
+function ProtectedRouteSale() {
+  // sale
+  const { isAuthenticated, profile } = useContext(AppContext)
+  if (profile?.roles && rolesCheck.isSale(profile.roles) && isAuthenticated) {
     return <Outlet />
   }
   return <Navigate to={path.login} />
@@ -73,11 +82,17 @@ function ProtectedRouteUser() {
 function RejectedRoute() {
   //login
   const { isAuthenticated, profile } = useContext(AppContext)
-  return !isAuthenticated ? (
-    <Outlet />
-  ) : (
-    <Navigate to={rolesCheck.isAdminOrSale(profile?.roles || []) ? path.admin.dashboard : path.home} />
-  )
+  if (!isAuthenticated) return <Outlet />
+  if (!profile) return null
+  if (profile.roles) {
+    if (rolesCheck.isAdmin(profile.roles)) {
+      return <Navigate to={path.admin.dashboard} />
+    }
+    if (rolesCheck.isSale(profile.roles)) {
+      return <Navigate to={path.sale.dashboard} />
+    }
+  }
+  return <Navigate to={path.home} />
 }
 
 export default function useRoutesElements() {
@@ -343,6 +358,72 @@ export default function useRoutesElements() {
                   element: (
                     <LazyComponent>
                       <Post />
+                    </LazyComponent>
+                  )
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      path: path._sale,
+      element: <ProtectedRouteSale />,
+      children: [
+        {
+          path: path._sale,
+          element: (
+            <LazyComponent>
+              <LayoutMain />
+            </LazyComponent>
+          ),
+          children: [
+            {
+              path: path.sale.dashboard,
+              element: (
+                <LazyComponent>
+                  <Dashboard />
+                </LazyComponent>
+              )
+            },
+            {
+              path: path.sale.coming_soon,
+              element: (
+                <LazyComponent>
+                  <ComingSoon />
+                </LazyComponent>
+              )
+            },
+            {
+              path: path.sale.booking,
+              element: (
+                <LazyComponent>
+                  <Booking />
+                </LazyComponent>
+              )
+            },
+            {
+              path: path.sale._setting,
+              element: (
+                <LazyComponent>
+                  <Setting />
+                </LazyComponent>
+              ),
+              children: [
+                {
+                  path: path.sale.setting.profile,
+                  element: (
+                    <LazyComponent>
+                      <ProfileAdmin />
+                    </LazyComponent>
+                  )
+                },
+                {
+                  path: path.sale.setting.system,
+                  element: (
+                    <LazyComponent>
+                      <SystemSetting />
                     </LazyComponent>
                   )
                 }

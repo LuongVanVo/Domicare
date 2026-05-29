@@ -6,9 +6,13 @@ import { Bell } from 'lucide-react'
 import { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { BreadcrumbHeader } from './BreadCrumbHeader'
+import { rolesCheck } from '@/utils/rolesCheck'
 
 export default function Header() {
   const { profile } = useContext(AppContext)
+  const isAdmin = rolesCheck.isAdmin(profile?.roles || [])
+  const comingSoonPath = isAdmin ? path.admin.coming_soon : path.sale.coming_soon
+  const profilePath = isAdmin ? path.admin.setting.profile : path.sale.setting.profile
 
   return (
     <div className='flex justify-between items-center w-full h-12 md:h-15 '>
@@ -19,13 +23,13 @@ export default function Header() {
       <div className='flex justify-center items-center gap-3 mr-5'>
         <Link
           className='hover:bg-bg shadow duration-300 h-8 w-8 md:h-10 md:w-10 rounded-full flex justify-center items-center'
-          to={path.admin.coming_soon}
+          to={comingSoonPath}
         >
           <Bell className='!w-5 h-auto' />
         </Link>
         <Link
           className='duration-300 h-8 md:h-12  gap-2 flex justify-center items-center'
-          to={path.admin.setting.profile}
+          to={profilePath}
         >
           <Avatar>
             <AvatarImage src={profile?.avatar} alt={profile?.name} />

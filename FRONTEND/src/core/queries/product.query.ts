@@ -110,20 +110,34 @@ export const useCategoryMutation = <TVariables>({ mutationFn, handleError }: use
 // review
 
 // booking
-export const useBookingQuery = ({ queryString }: { queryString: BookingQueryConfig }) => {
+export const useBookingQuery = ({
+  queryString,
+  basePath = path.admin.booking
+}: {
+  queryString: BookingQueryConfig
+  basePath?: string
+}) => {
   return useQuery({
-    queryKey: [path.admin.booking, queryString],
+    queryKey: [basePath, queryString],
     queryFn: () => bookingApi.query(queryString as BookingListConfig),
     placeholderData: keepPreviousData,
     staleTime: STATE_TIME
   })
 }
-export const useUserBookingQuery = ({ queryString }: { queryString: BookingQueryConfig }) => {
+export const useUserBookingQuery = ({
+  queryString,
+  enabled = true
+}: {
+  queryString: BookingQueryConfig
+  enabled?: boolean
+}) => {
+  const hasValidUserId = queryString.userId !== undefined && !isNaN(Number(queryString.userId))
   return useQuery({
     queryKey: [path.user.history, queryString],
     queryFn: () => bookingApi.query(queryString as BookingListConfig),
     placeholderData: keepPreviousData,
-    staleTime: STATE_TIME
+    staleTime: STATE_TIME,
+    enabled: enabled && hasValidUserId
   })
 }
 
@@ -164,6 +178,7 @@ interface UpdateSttBookingProps {
   successMessage?: string
 }
 export const useUpdateSttBookingMutation = ({ successMessage }: UpdateSttBookingProps) => {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationKey: mutationKeys.booking,
     mutationFn: (data: BookingUpdateRequest) => {
@@ -174,6 +189,9 @@ export const useUpdateSttBookingMutation = ({ successMessage }: UpdateSttBooking
         title: 'Thành công',
         description: successMessage
       })
+      queryClient.invalidateQueries({ queryKey: [path.admin.booking] })
+      queryClient.invalidateQueries({ queryKey: [path.sale.booking] })
+      queryClient.invalidateQueries({ queryKey: [path.user.history] })
     },
     onError: (error) => handleToastError(error)
   })

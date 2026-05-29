@@ -16,6 +16,7 @@ import { Link } from 'react-router-dom'
 import { path } from '@/core/constants/path'
 import { useLogoutMutation } from '@/core/queries/auth.query'
 import { useTranslation } from 'react-i18next'
+import { rolesCheck } from '@/utils/rolesCheck'
 
 export function NavUser({ user }: { user?: User }) {
   const { isMobile } = useSidebar()
@@ -24,6 +25,9 @@ export function NavUser({ user }: { user?: User }) {
     logoutMutation.mutate()
   }
   const { t } = useTranslation('common')
+  const isAdmin = rolesCheck.isAdmin(user?.roles || [])
+  const comingSoonPath = isAdmin ? path.admin.coming_soon : path.sale.coming_soon
+  const profilePath = isAdmin ? path.admin.setting.profile : path.sale.setting.profile
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -64,7 +68,7 @@ export function NavUser({ user }: { user?: User }) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <Link to={path.admin.coming_soon}>
+              <Link to={comingSoonPath}>
                 <DropdownMenuItem>
                   <Sparkles />
                   {t('upgrade_system')}
@@ -73,13 +77,13 @@ export function NavUser({ user }: { user?: User }) {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <Link to={path.admin.setting.profile}>
+              <Link to={profilePath}>
                 <DropdownMenuItem>
                   <BadgeCheck />
                   {t('profile')}
                 </DropdownMenuItem>
               </Link>
-              <Link to={path.admin.coming_soon}>
+              <Link to={comingSoonPath}>
                 <DropdownMenuItem>
                   <Bell />
                   {t('notification')}

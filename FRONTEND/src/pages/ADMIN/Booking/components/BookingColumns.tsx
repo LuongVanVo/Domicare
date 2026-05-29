@@ -72,7 +72,17 @@ export const useBookingColumns = (): ColumnDef<Booking>[] => {
         const name = (row.getValue('userDTO') as User).name
           ? (row.getValue('userDTO') as User).name
           : (row.getValue('userDTO') as User).email
-        return <div className='w-fit text-nowrap max-w-3xs md:max-w-md truncate'>{name}</div>
+        const amountPaid = row.original.amountPaid || 0
+        return (
+          <div className='flex items-center gap-1.5'>
+            {amountPaid > 0 && (
+              <span className='bg-amber-500 text-white text-[9px] px-1 rounded font-bold' title='Đơn hàng ưu tiên (đã cọc)'>
+                ⭐ ƯU TIÊN
+              </span>
+            )}
+            <div className='w-fit text-nowrap max-w-3xs md:max-w-md truncate font-medium'>{name}</div>
+          </div>
+        )
       },
       enableSorting: false
     },
@@ -107,9 +117,15 @@ export const useBookingColumns = (): ColumnDef<Booking>[] => {
       },
       cell: ({ row }) => {
         const status = row.getValue('bookingStatus') as BookingStatus
+        const amountPaid = row.original.amountPaid || 0
         return (
-          <div className='text-center'>
+          <div className='text-center flex flex-col items-center gap-1 justify-center'>
             <StatusBadge status={status} />
+            {amountPaid > 0 && (
+              <span className='bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-bold border border-amber-300 animate-pulse text-nowrap'>
+                Đã cọc: {formatCurrentcy(amountPaid)}
+              </span>
+            )}
           </div>
         )
       },
@@ -132,6 +148,19 @@ export const useBookingColumns = (): ColumnDef<Booking>[] => {
       cell: ({ row }) => (
         <DataTableRowActions
           row={row}
+          onChat={(row: Booking) => {
+            const customer = row.userDTO
+            if (customer) {
+              const event = new CustomEvent('open_admin_chat', {
+                detail: {
+                  customerId: customer._id || String(customer.id),
+                  customerName: customer.name || customer.email,
+                  booking: row
+                }
+              })
+              window.dispatchEvent(event)
+            }
+          }}
           onAccepted={(row: Booking) => {
             if (!row.saleDTO) {
               // call API

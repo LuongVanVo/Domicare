@@ -38,13 +38,14 @@ export const useMetrics = () => {
   ] as const
 }
 
-export function MetricsOverview({ value = {}, isLoading = false }: MetricsOverviewProps) {
+export function MetricsOverview({ value, isLoading = false }: MetricsOverviewProps) {
   const { t } = useTranslation(['admin'])
   const metrics = useMetrics()
+  const safeValue = value || {}
   return (
     <div className='grid grid-cols-12 gap-2'>
       {metrics.map((metric) => {
-        const data = value[metric.key as keyof DashboardSummary]
+        const data = safeValue[metric.key as keyof DashboardSummary]
         const change = data?.change || 0
         const changeText = change > 0 ? `${change}%` : `${change}%`
         return (

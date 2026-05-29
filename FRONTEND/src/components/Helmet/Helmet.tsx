@@ -35,7 +35,14 @@ const PAGE_TITLES = {
   [path.admin.manage.product]: 'Quản lý dịch vụ - DomiCare Admin',
   [path.admin.manage.post]: 'Quản lý bài viết - DomiCare Admin',
   [path.admin.setting.profile]: 'Cài đặt cá nhân - DomiCare Admin',
-  [path.admin.setting.system]: 'Cài đặt hệ thống - DomiCare Admin'
+  [path.admin.setting.system]: 'Cài đặt hệ thống - DomiCare Admin',
+
+  // Sale routes
+  [path.sale.dashboard]: 'Báo cáo & Thống kê - DomiCare Sale',
+  [path.sale.coming_soon]: 'Sắp ra mắt - DomiCare Sale',
+  [path.sale.booking]: 'Quản lý đơn hàng - DomiCare Sale',
+  [path.sale.setting.profile]: 'Cài đặt cá nhân - DomiCare Sale',
+  [path.sale.setting.system]: 'Cài đặt hệ thống - DomiCare Sale'
 } as const
 
 const PAGE_DESCRIPTIONS = {
@@ -71,7 +78,14 @@ const PAGE_DESCRIPTIONS = {
   [path.admin.manage.product]: 'Quản lý các dịch vụ vệ sinh được cung cấp bởi DomiCare.',
   [path.admin.manage.post]: 'Quản lý bài viết, tin tức trên hệ thống DomiCare Admin.',
   [path.admin.setting.profile]: 'Cài đặt thông tin cá nhân cho tài khoản quản trị viên.',
-  [path.admin.setting.system]: 'Cài đặt hệ thống, cấu hình chung cho DomiCare Admin.'
+  [path.admin.setting.system]: 'Cài đặt hệ thống, cấu hình chung cho DomiCare Admin.',
+
+  // Sale routes
+  [path.sale.dashboard]: 'Báo cáo, thống kê hoạt động của hệ thống DomiCare Sale.',
+  [path.sale.coming_soon]: 'Các tính năng kinh doanh mới sắp ra mắt trên DomiCare Sale.',
+  [path.sale.booking]: 'Quản lý, theo dõi các đơn đặt lịch dịch vụ vệ sinh của khách hàng.',
+  [path.sale.setting.profile]: 'Cài đặt thông tin cá nhân cho tài khoản nhân viên kinh doanh.',
+  [path.sale.setting.system]: 'Cài đặt hệ thống, cấu hình chung cho DomiCare Sale.'
 } as const
 
 interface HelmetProps {

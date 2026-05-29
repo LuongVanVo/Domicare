@@ -39,7 +39,7 @@ function SaleContent() {
             DataTablePagination={
               <DataTablePagination
                 pageController={pageController}
-                path={path.admin.manage.user}
+                path={path.admin.manage.sale}
                 queryString={queryString}
               />
             }

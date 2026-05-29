@@ -1,4 +1,4 @@
-﻿from datetime import datetime
+from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel, Field
 
@@ -29,6 +29,7 @@ class MiniBookingResponse(BaseModel):
     id: Optional[int] = None
     address: str
     total_price: Optional[float] = Field(None, alias='totalPrice')
+    amount_paid: Optional[float] = Field(0.0, alias='amountPaid')
     note: Optional[str] = None
     start_time: datetime = Field(..., alias='startTime')
     products: Optional[List[ProductMini]] = None

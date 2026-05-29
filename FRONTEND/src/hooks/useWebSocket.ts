@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useContext } from 'react'
 import { getAccessTokenFromLS } from '@/utils/storage'
+import { AppContext } from '@/core/contexts/app.context'
 
 interface WebSocketConfig {
   url: string
@@ -15,6 +16,9 @@ export const useWebSocket = (config: WebSocketConfig) => {
   const wsRef = useRef<WebSocket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const reconnectTimeoutRef = useRef<any>(null)
+  const { isAuthenticated } = useContext(AppContext)
+
+  const token = typeof window !== 'undefined' ? getAccessTokenFromLS() : null
 
   // Use refs for callbacks and topics to prevent triggering reconnects when they change references
   const topicsRef = useRef(config.topics)
@@ -35,8 +39,7 @@ export const useWebSocket = (config: WebSocketConfig) => {
       return
     }
 
-    const token = getAccessTokenFromLS()
-    if (!config.url || !token) {
+    if (!config.url || !token || !isAuthenticated) {
       setIsConnected(false)
       return
     }
@@ -86,6 +89,12 @@ export const useWebSocket = (config: WebSocketConfig) => {
                   callback(msgData)
                 }
               })
+            } else if (msgType === 'chat_message_delete') {
+              Object.entries(topicsRef.current).forEach(([topic, callback]) => {
+                if (topic === 'chat_message_delete' || topic.includes('delete')) {
+                  callback(msgData)
+                }
+              })
             }
           } catch (e) {
             console.error('Failed to parse WebSocket message:', e)
@@ -110,7 +119,7 @@ export const useWebSocket = (config: WebSocketConfig) => {
       }
       setIsConnected(false)
     }
-  }, [config.url]) // Reconnect only if connection URL changes
+  }, [config.url, token, isAuthenticated]) // Reconnect if connection URL, token, or auth state changes
 
   const sendMessage = (action: string, payload: any) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {

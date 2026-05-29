@@ -5,6 +5,7 @@ export interface Booking {
   id?: number
   address?: string
   totalPrice?: number
+  amountPaid?: number
   note?: string
   startTime?: string
   products?: Product[]

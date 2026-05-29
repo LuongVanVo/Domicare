@@ -3,6 +3,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import Header from './Header'
 import AnimatedOutlet from '@/components/AnimatedOutlet'
 import Helmet from '@/components/Helmet/Helmet'
+import Chat from '@/components/Chat'
 
 const LayoutMain = () => {
   return (
@@ -17,6 +18,7 @@ const LayoutMain = () => {
           </div>
         </main>
       </SidebarInset>
+      <Chat />
     </SidebarProvider>
   )
 }

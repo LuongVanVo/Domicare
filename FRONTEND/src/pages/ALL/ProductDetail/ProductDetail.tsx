@@ -37,6 +37,7 @@ import { scroller } from 'react-scroll'
 import Helmet from '@/components/Helmet/Helmet'
 import { useTranslation } from 'react-i18next'
 import Payment from './components/Payment'
+import { Booking } from '@/models/interface/booking.interface'
 
 export default function ProductDetail() {
   const [isOpen, setIsOpen] = useState<boolean>(false)
@@ -62,7 +63,11 @@ export default function ProductDetail() {
       isPeriodic: 'false'
     }
   })
-  const handleShowPayment = () => {
+  const [createdBooking, setCreatedBooking] = useState<Booking | null>(null)
+  const handleShowPayment = (res?: any) => {
+    if (res?.data?.data) {
+      setCreatedBooking(res.data.data)
+    }
     setIsOpen((prev) => !prev)
   }
   const mutationBooking = useBookingMutation(handleShowPayment)
@@ -440,7 +445,7 @@ export default function ProductDetail() {
         </div>
       )}
 
-      <Payment product={product} isOpen={isOpen} setIsOpen={setIsOpen} />
+      <Payment product={product} booking={createdBooking} isOpen={isOpen} setIsOpen={setIsOpen} />
     </div>
   )
 }

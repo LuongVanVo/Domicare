@@ -38,5 +38,16 @@ export const path = {
     history: '/user/history',
     change_password: '/user/change_password',
     settings: '/user/settings'
+  },
+  _sale: '/sale',
+  sale: {
+    dashboard: '/sale/dashboard',
+    coming_soon: '/sale/coming_soon',
+    booking: '/sale/booking',
+    _setting: '/sale/setting',
+    setting: {
+      profile: '/sale/setting/profile',
+      system: '/sale/setting/system'
+    }
   }
 }

@@ -4,6 +4,7 @@ import { path } from '@/core/constants/path'
 import DataTable from '@/components/DataTable'
 import { DataTablePagination } from '@/components/DataTable/DataTablePagination'
 import { BookingDialog } from './components/BookingDialog'
+import { useLocation } from 'react-router-dom'
 
 import { useBookingColumns } from './components/BookingColumns'
 import { useBookingQueryConfig } from '@/hooks/useBookingQueryConfig'
@@ -23,14 +24,18 @@ export default function Booking() {
 }
 
 function BookingContent() {
+  const location = useLocation()
+  const isSaleRoute = location.pathname.startsWith('/sale')
+  const basePath = isSaleRoute ? path.sale.booking : path.admin.booking
+
   const queryString = useBookingQueryConfig({})
-  const { data: bookingsData, isLoading } = useBookingQuery({ queryString })
+  const { data: bookingsData, isLoading } = useBookingQuery({ queryString, basePath })
   const bookingList = bookingsData?.data?.data.data
   const pageController = bookingsData?.data?.data.meta
   const columns = useBookingColumns()
 
   // realtime webSocket
-  const memoizedQueryKey = [path.admin.booking, queryString]
+  const memoizedQueryKey = [basePath, queryString]
   useBookingWebSocket({ queryKey: memoizedQueryKey })
 
   return (
@@ -46,7 +51,7 @@ function BookingContent() {
             DataTablePagination={
               <DataTablePagination
                 pageController={pageController}
-                path={path.admin.booking}
+                path={basePath}
                 queryString={queryString}
               />
             }

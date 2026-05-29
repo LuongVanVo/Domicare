@@ -24,10 +24,12 @@ class StripeService:
             # 1. Fetch related booking if possible
             booking = None
             try:
-                booking_id = int(order_id_str)
+                # If order_id_str is composite (e.g., 59_deposit_178000 or 59_remaining_17800), split by '_' and try the first part
+                booking_id_str = order_id_str.split('_')[0]
+                booking_id = int(booking_id_str)
                 booking = Booking.objects.get(id=booking_id)
             except Exception as e:
-                logger.warning(f"[StripeService] Could not find Booking with ID {order_id_str}: {e}")
+                logger.warning(f"[StripeService] Could not find Booking with ID from {order_id_str}: {e}")
 
             # 2. Save payment transaction to database in PENDING state
             payment_transaction = PaymentTransaction.objects.create(
@@ -99,17 +101,29 @@ class StripeService:
 
             if session.payment_status == 'paid':
                 payment_transaction.status = PaymentStatus.SUCCESS.value
+                payment_transaction.amount = session.amount_total  # Save the actual paid amount (VND)
                 payment_transaction.response_code = 'SUCCESS'
                 payment_transaction.bank_code = 'card'
                 payment_transaction.pay_date = str(session.created) # unix timestamp
                 payment_transaction.save()
 
-                # Update booking status to ACCEPTED
+                # Update booking status and amount_paid
                 if payment_transaction.booking:
                     booking = payment_transaction.booking
-                    booking.booking_status = BookingStatus.ACCEPTED.value
+                    successful_payments = PaymentTransaction.objects.filter(
+                        booking=booking,
+                        status=PaymentStatus.SUCCESS.value
+                    )
+                    total_paid = sum([p.amount for p in successful_payments])
+                    booking.amount_paid = total_paid
+                    
+                    if booking.amount_paid >= booking.total_price:
+                        booking.booking_status = BookingStatus.SUCCESS.value
+                    else:
+                        booking.booking_status = BookingStatus.ACCEPTED.value
+                        
                     booking.save()
-                    logger.info(f"[StripeService] Updated Booking #{booking.id} status to ACCEPTED")
+                    logger.info(f"[StripeService] Updated Booking #{booking.id}: amount_paid={booking.amount_paid}, status={booking.booking_status}")
 
                 logger.info(f"[StripeService] Payment succeeded for order: {order_id_str}")
                 return f"{self.frontend_url}/payment?status=success&orderInfo={order_id_str}&amount={payment_transaction.amount * 100}"

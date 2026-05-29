@@ -2,23 +2,27 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Product } from '@/models/interface/product.interface'
+import { Booking } from '@/models/interface/booking.interface'
 import axiosClient from '@/core/services/axios-client'
 import { CheckCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 interface PaymentProps {
     product?: Product
+    booking?: Booking | null
     isOpen: boolean
     setIsOpen: ( open: boolean ) => void
 }
 
-export default function Payment ( { product, isOpen, setIsOpen }: PaymentProps ) {
+export default function Payment ( { product, booking, isOpen, setIsOpen }: PaymentProps ) {
     const { t } = useTranslation( 'product' )
 
     const handleDeposit = async () => {
         const amount = product?.priceAfterDiscount ? product.priceAfterDiscount * 0.1 : 0
         const orderInfo = `Dat coc dich vu ${ product?.name } - ${ amount } VND`
-        const orderId = `ORDER_${ new Date().getTime() }`
+        const orderId = booking?.id
+            ? `${booking.id}_deposit_${new Date().getTime()}`
+            : `ORDER_${ new Date().getTime() }`
 
         try {
             const response = await axiosClient.post( '/payment/create-payment', {
