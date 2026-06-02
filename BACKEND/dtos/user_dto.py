@@ -23,6 +23,10 @@ class UserDTO(BaseModel):
     update_by: Optional[str] = Field(None, alias="updateBy")
     create_at: Optional[datetime] = Field(None, alias="createAt")
     update_at: Optional[datetime] = Field(None, alias="updateAt")
+    user_total_success_bookings: Optional[int] = Field(0, alias="userTotalSuccessBookings")
+    user_total_failed_bookings: Optional[int] = Field(0, alias="userTotalFailedBookings")
+    sale_total_bookings: Optional[int] = Field(0, alias="saleTotalBookings")
+    sale_success_percent: Optional[float] = Field(0.0, alias="saleSuccessPercent")
     roles: Optional[List[RoleDTO]] = []
 
     @model_validator(mode='after')

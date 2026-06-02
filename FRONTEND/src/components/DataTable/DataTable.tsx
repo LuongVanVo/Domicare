@@ -87,12 +87,18 @@ export function DataTable<TData, TValue>({
     data,
     columns,
     onSortingChange: handleSortingChange,
-    onColumnFiltersChange: setColumnFilters,
+    onColumnFiltersChange: (updater) => {
+      setTimeout(() => setColumnFilters(updater), 0)
+    },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
+    onColumnVisibilityChange: (updater) => {
+      setTimeout(() => setColumnVisibility(updater), 0)
+    },
+    onRowSelectionChange: (updater) => {
+      setTimeout(() => setRowSelection(updater), 0)
+    },
     state: {
       sorting,
       columnFilters,

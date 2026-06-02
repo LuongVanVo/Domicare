@@ -1,4 +1,4 @@
-﻿from dtos.role_dto import RoleDTO
+from dtos.role_dto import RoleDTO
 from dtos.user_dto import UserDTO
 from models.user import User
 from models.user import UserRole
@@ -34,6 +34,14 @@ class UserMapper:
             isEmailConfirmed=user.is_email_confirmed,
             isActive=user.is_active,
             isDelete=user.is_deleted,
+            create_by=user.create_by,
+            update_by=user.update_by,
+            create_at=user.create_at,
+            update_at=user.update_at,
+            user_total_success_bookings=user.user_total_success_bookings,
+            user_total_failed_bookings=user.user_total_failed_bookings,
+            sale_total_bookings=user.sale_total_bookings,
+            sale_success_percent=user.sale_success_percent,
             roles=roles_list
         )
 
@@ -58,4 +66,8 @@ class UserMapper:
             update_at=user_dto.update_at,
             create_by=user_dto.create_by,
             update_by=user_dto.update_by,
+            user_total_success_bookings=user_dto.user_total_success_bookings if user_dto.user_total_success_bookings is not None else 0,
+            user_total_failed_bookings=user_dto.user_total_failed_bookings if user_dto.user_total_failed_bookings is not None else 0,
+            sale_total_bookings=user_dto.sale_total_bookings if user_dto.sale_total_bookings is not None else 0,
+            sale_success_percent=user_dto.sale_success_percent if user_dto.sale_success_percent is not None else 0.0,
         )

@@ -1,4 +1,4 @@
-﻿from typing import Optional
+from typing import Optional, Union
 from pydantic import BaseModel, Field, field_validator
 from datetime import date, datetime
 
@@ -13,7 +13,7 @@ class UpdateUserRequest(BaseModel):
     old_password: Optional[str] = Field(None, alias="oldPassword")
     new_password: Optional[str] = Field(None, alias="newPassword")
     confirm_password: Optional[str] = Field(None, alias="confirmPassword")
-    image_id: Optional[str] = Field(None, alias="imageId")
+    image_id: Optional[Union[int, str]] = Field(None, alias="imageId")
 
     @field_validator('date_of_birth', mode='before')
     @classmethod

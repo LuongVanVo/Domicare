@@ -9,6 +9,7 @@ from services.user_service import UserService
 from utils.format_response import FormatRestResponse
 from rest_framework import status as http_status
 from dtos.user_dto import UserDTO
+from mappers.user_mapper import UserMapper
 from django.http import JsonResponse
 from rest_framework.permissions import AllowAny, IsAuthenticated
 import logging
@@ -27,26 +28,10 @@ def get_me(request):
                 message="User not authenticated."
             ), status=http_status.HTTP_401_UNAUTHORIZED)
         
-        user_dto = UserDTO(
-            id=current_user.id,
-            name=current_user.full_name,
-            email=current_user.email,
-            phone=current_user.phone,
-            address=current_user.address,
-            avatar=current_user.avatar,
-            gender=current_user.gender,
-            dateOfBirth=current_user.date_of_birth,
-            isEmailConfirmed=current_user.is_email_confirmed,
-            isActive=current_user.is_active,
-            createAt=current_user.create_at,
-            updateAt=current_user.update_at,
-            createBy=current_user.create_by,
-            updateBy=current_user.update_by,
-            roles=list(current_user.roles.all()) if hasattr(current_user, 'roles') else [],  
-        )
+        user_dto = UserMapper.to_dto(current_user)
         
         return JsonResponse(FormatRestResponse.success(
-            data=user_dto.model_dump()
+            data=user_dto.to_dict()
         ), status=http_status.HTTP_200_OK)
     
     except Exception as e:
@@ -146,7 +131,7 @@ def update_user_information(request):
         updated_user = user_service.update_user_information(update_request)
         return JsonResponse(
             FormatRestResponse.success(
-                data=updated_user.model_dump(),
+                data=updated_user.to_dict(),
                 message="User information updated successfully."
             ),
             status=http_status.HTTP_200_OK
@@ -174,7 +159,7 @@ def update_user_roles(request):
         updated_user = user_service.update_role_for_user(role_request)
         return JsonResponse(
             FormatRestResponse.success(
-                data=updated_user.model_dump(),
+                data=updated_user.to_dict(),
                 message="User roles updated successfully."
             ),
             status=http_status.HTTP_200_OK
@@ -203,7 +188,7 @@ def create_user_by_admin(request):
 
         return JsonResponse(
             FormatRestResponse.success(
-                data=created_user.model_dump(),
+                data=created_user.to_dict(),
                 message="User created successfully."
             ),
             status=http_status.HTTP_201_CREATED
