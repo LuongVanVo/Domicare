@@ -296,67 +296,107 @@ export function RefundDialog({ isOpen, onClose, booking, onSendSystemMessage }: 
               </div>
             )
           ) : (
-            /* CUSTOMER FORM LAYOUT: Shorter, compact form with no card preview */
-            <form onSubmit={handleSubmitRefundDetails} className='space-y-3.5'>
-              <div className='space-y-1'>
-                <Label htmlFor='bankName' className='text-slate-700 text-xs font-semibold'>
+            /* CUSTOMER FORM LAYOUT: Dynamic, premium credit-card style layout */
+            <form onSubmit={handleSubmitRefundDetails} className='space-y-4'>
+              {/* Dynamic Card Preview */}
+              <div className='relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0d5b4d] via-[#10705c] to-[#06332a] p-5 text-white shadow-xl border border-emerald-500/10 transition-all duration-300 hover:shadow-2xl hover:scale-[1.01]'>
+                {/* Ambient glows */}
+                <div className='absolute top-0 right-0 w-24 h-24 bg-emerald-400/10 rounded-full blur-xl' />
+                <div className='absolute -left-6 -bottom-6 w-28 h-28 bg-teal-400/15 rounded-full blur-xl' />
+                
+                <div className='flex justify-between items-start mb-4 z-10 relative'>
+                  <div className='space-y-0.5'>
+                    <p className='text-[8px] text-emerald-300 uppercase tracking-widest font-bold opacity-80'>TÀI KHOẢN NHẬN HOÀN TIỀN</p>
+                    <h4 className='text-xs font-semibold text-white/90'>Đơn hàng #{currentBooking.id}</h4>
+                  </div>
+                  <div className='h-6 w-9 rounded bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center'>
+                    <span className='text-[9px] font-bold tracking-wider text-emerald-200'>BANK</span>
+                  </div>
+                </div>
+
+                <div className='space-y-3 z-10 relative'>
+                  <div>
+                    <span className='text-[8px] text-emerald-400 block uppercase tracking-wider font-semibold opacity-70'>
+                      Ngân hàng
+                    </span>
+                    <span className='text-xs font-semibold flex items-center gap-1.5 text-slate-100 min-h-4 transition-all duration-150'>
+                      <Building size={11} className='text-emerald-400' />
+                      {bankName.trim() || 'Chưa nhập tên ngân hàng...'}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className='text-[8px] text-emerald-400 block uppercase tracking-wider font-semibold opacity-70'>
+                      Số tài khoản (STK)
+                    </span>
+                    <span className='text-sm font-mono font-bold tracking-widest text-white min-h-5 block transition-all duration-150'>
+                      {accountNumber.trim() || '•••• •••• •••• ••••'}
+                    </span>
+                  </div>
+
+                  <div className='pt-2 border-t border-white/10 flex justify-between items-center'>
+                    <div>
+                      <span className='text-[8px] text-emerald-400 block uppercase tracking-wider font-semibold opacity-70'>
+                        Chủ tài khoản
+                      </span>
+                      <span className='text-[10px] font-semibold uppercase tracking-widest text-emerald-100 flex items-center gap-1.5 min-h-4 transition-all duration-150'>
+                        <User size={10} className='text-emerald-400' />
+                        {accountHolder.trim().toUpperCase() || 'CHƯA NHẬP TÊN'}
+                      </span>
+                    </div>
+                    <span className='text-xs font-bold text-emerald-300'>{formatCurrentcy(refundAmount)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className='space-y-1.5'>
+                <Label htmlFor='bankName' className='text-slate-700 text-xs font-semibold flex items-center gap-1.5'>
+                  <Building size={12} className='text-emerald-600' />
                   Tên ngân hàng thụ hưởng
                 </Label>
                 <div className='relative'>
-                  <Building className='absolute left-3 top-2.5 text-slate-400 size-3.5' />
                   <Input
                     id='bankName'
                     value={bankName}
                     onChange={(e) => setBankName(e.target.value)}
                     placeholder='Ví dụ: MB Bank, Vietcombank, Techcombank...'
-                    className='pl-9 rounded-xl border-slate-200 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 h-9 text-xs'
+                    className='rounded-xl border-slate-200 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 focus:shadow-[0_0_0_2px_rgba(16,185,129,0.15)] transition-all duration-150 h-10 text-xs pl-3'
                     required
                   />
                 </div>
               </div>
 
-              <div className='space-y-1'>
-                <Label htmlFor='accountNumber' className='text-slate-700 text-xs font-semibold'>
+              <div className='space-y-1.5'>
+                <Label htmlFor='accountNumber' className='text-slate-700 text-xs font-semibold flex items-center gap-1.5'>
+                  <CreditCard size={12} className='text-emerald-600' />
                   Số tài khoản (STK) nhận tiền
                 </Label>
                 <div className='relative'>
-                  <CreditCard className='absolute left-3 top-2.5 text-slate-400 size-3.5' />
                   <Input
                     id='accountNumber'
                     value={accountNumber}
                     onChange={(e) => setAccountNumber(e.target.value)}
                     placeholder='Nhập số tài khoản ngân hàng'
-                    className='pl-9 rounded-xl border-slate-200 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 h-9 text-xs font-mono tracking-wide'
+                    className='rounded-xl border-slate-200 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 focus:shadow-[0_0_0_2px_rgba(16,185,129,0.15)] transition-all duration-150 h-10 text-xs font-mono tracking-wide pl-3'
                     required
                   />
                 </div>
               </div>
 
-              <div className='space-y-1'>
-                <Label htmlFor='accountHolder' className='text-slate-700 text-xs font-semibold'>
+              <div className='space-y-1.5'>
+                <Label htmlFor='accountHolder' className='text-slate-700 text-xs font-semibold flex items-center gap-1.5'>
+                  <User size={12} className='text-emerald-600' />
                   Tên chủ tài khoản ngân hàng
                 </Label>
                 <div className='relative'>
-                  <User className='absolute left-3 top-2.5 text-slate-400 size-3.5' />
                   <Input
                     id='accountHolder'
                     value={accountHolder}
                     onChange={(e) => setAccountHolder(e.target.value)}
                     placeholder='Ví dụ: NGUYEN VAN A'
-                    className='pl-9 rounded-xl border-slate-200 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 h-9 text-xs uppercase font-semibold'
+                    className='rounded-xl border-slate-200 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 focus:shadow-[0_0_0_2px_rgba(16,185,129,0.15)] transition-all duration-150 h-10 text-xs uppercase font-semibold pl-3'
                     required
                   />
-                </div>
-              </div>
-
-              <div className='space-y-1.5 p-3 bg-slate-50 border border-slate-100 rounded-2xl text-[11px] text-slate-600'>
-                <div className='flex justify-between items-center'>
-                  <span>Đơn hàng áp dụng:</span>
-                  <span className='font-semibold text-slate-700'>#{currentBooking.id}</span>
-                </div>
-                <div className='flex justify-between items-center'>
-                  <span>Số tiền cọc được hoàn trả:</span>
-                  <span className='font-bold text-emerald-600 text-xs'>{formatCurrentcy(refundAmount)}</span>
                 </div>
               </div>
 
