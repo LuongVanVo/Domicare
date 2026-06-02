@@ -1,6 +1,7 @@
-﻿import logging
+import logging
 
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from pydantic import ValidationError
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -43,7 +44,7 @@ def create_product(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
-@api_view(['PATCH'])
+@api_view(['PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def update_product(request):
     """Update an existing product"""
@@ -174,3 +175,12 @@ def upload_product_image(request):
             FormatRestResponse.error(message="Internal server error"),
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+@csrf_exempt
+@api_view(['POST', 'PUT', 'PATCH'])
+def product_root_dispatcher(request):
+    """Dispatch POST (create) and PUT/PATCH (update) requests for product root endpoint"""
+    if request.method in ['PUT', 'PATCH']:
+        return update_product(request._request)
+    return create_product(request._request)

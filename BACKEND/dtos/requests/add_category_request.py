@@ -1,4 +1,5 @@
-﻿from pydantic import BaseModel, Field, validator
+from typing import Optional, Union
+from pydantic import BaseModel, Field, validator
 
 
 class AddCategoryRequest(BaseModel):
@@ -9,21 +10,22 @@ class AddCategoryRequest(BaseModel):
         description='Name of category'
     )
 
-    description: str = Field(
+    description: Optional[str] = Field(
         None,
         max_length=500,
         description='Description of the category'
     )
 
-    image_id: int = Field(
-        ...,
+    image_id: Optional[Union[int, str]] = Field(
+        None,
+        alias='imageId',
         description='ID/URL of image'
     )
 
     @validator('name')
     def validate_name(cls, v):
         if not v or not v.strip():
-            raise validators.ValidationError('Name category must not be empty')
+            raise ValueError('Name category must not be empty')
         return v.strip()
 
     @validator('description')
@@ -31,3 +33,6 @@ class AddCategoryRequest(BaseModel):
         if v:
             return v.strip()
         return v
+
+    class Config:
+        populate_by_name = True

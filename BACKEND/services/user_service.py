@@ -132,7 +132,7 @@ class UserService:
                 'total': total,
                 'total_pages': total_pages,
             },
-            'data': [dto.model_dump(by_alias=True) for dto in user_dtos]
+            'data': [dto.to_dict() for dto in user_dtos]
         }
 
     # EMAIL CONFIRMATION

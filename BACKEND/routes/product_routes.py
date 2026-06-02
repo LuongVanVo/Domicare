@@ -1,8 +1,8 @@
-﻿from django.urls import path
+from django.urls import path
 from controllers import product_controller
 
 urlpatterns = [
-    path('', product_controller.create_product, name='create_product'),
+    path('', product_controller.product_root_dispatcher, name='product_root'),
     path('update', product_controller.update_product, name='update_product'),
     path('<int:product_id>', product_controller.delete_product, name='delete_product'),
     path('upload-image', product_controller.upload_product_image, name='upload_product_image'),
