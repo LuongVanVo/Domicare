@@ -22,6 +22,22 @@ class UserMapper:
         except Exception as e:
             logger.warning(f"Failed to get roles for user {user.email}: {e}")
 
+        # Fallback to default ROLE_USER if user has no assigned roles in DB
+        if not roles_list:
+            try:
+                from models.role import Role
+                role_user = Role.objects.filter(name='ROLE_USER').first()
+                if role_user:
+                    roles_list.append(RoleDTO(
+                        id=role_user.id,
+                        name=role_user.name,
+                        description=role_user.description
+                    ))
+                else:
+                    roles_list.append(RoleDTO(id=1, name='ROLE_USER', description='Default User Role'))
+            except Exception:
+                roles_list.append(RoleDTO(id=1, name='ROLE_USER', description='Default User Role'))
+
         return UserDTO(
             id=user.id,
             email=user.email,
