@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 from datetime import  timedelta
 from typing import Optional, Tuple
 from django.utils import timezone
@@ -117,6 +117,21 @@ class AuthService:
             is_active=False,
             is_deleted=False,
         )
+
+        # Assign default role 'ROLE_USER'
+        try:
+            from models.role import Role
+            from django.db import connection
+            default_role = Role.objects.filter(name='ROLE_USER').first()
+            if default_role:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "INSERT INTO users_roles (user_id, role_id) VALUES (%s, %s)",
+                        [user.id, default_role.id]
+                    )
+                logger.info(f"[Auth] Assigned default ROLE_USER to registered user: {email}")
+        except Exception as e:
+            logger.error(f"[Auth] Failed to assign default ROLE_USER during registration: {e}")
 
         # send verification email
         try:
@@ -251,6 +266,21 @@ class AuthService:
             )
             user.set_password(user.password)
             self.user_repo.save(user)
+
+            # Assign default role 'ROLE_USER'
+            try:
+                from models.role import Role
+                from django.db import connection
+                default_role = Role.objects.filter(name='ROLE_USER').first()
+                if default_role:
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            "INSERT INTO users_roles (user_id, role_id) VALUES (%s, %s)",
+                            [user.id, default_role.id]
+                        )
+                    logger.info(f"[OAuth2] Assigned default ROLE_USER to OAuth2 user: {email}")
+            except Exception as e:
+                logger.error(f"[OAuth2] Failed to assign default ROLE_USER: {e}")
         else:
             logger.info(f"[OAuth2] Updating existing user for email: {email} via Google OAuth2")
             # Update existing user info
