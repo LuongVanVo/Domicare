@@ -1,4 +1,4 @@
-﻿from dtos.role_dto import RoleDTO
+from dtos.role_dto import RoleDTO
 from dtos.user_dto import UserDTO
 from models.user import User
 from models.user import UserRole
@@ -22,6 +22,22 @@ class UserMapper:
         except Exception as e:
             logger.warning(f"Failed to get roles for user {user.email}: {e}")
 
+        # Fallback to default ROLE_USER if user has no assigned roles in DB
+        if not roles_list:
+            try:
+                from models.role import Role
+                role_user = Role.objects.filter(name='ROLE_USER').first()
+                if role_user:
+                    roles_list.append(RoleDTO(
+                        id=role_user.id,
+                        name=role_user.name,
+                        description=role_user.description
+                    ))
+                else:
+                    roles_list.append(RoleDTO(id=1, name='ROLE_USER', description='Default User Role'))
+            except Exception:
+                roles_list.append(RoleDTO(id=1, name='ROLE_USER', description='Default User Role'))
+
         return UserDTO(
             id=user.id,
             email=user.email,
@@ -34,6 +50,14 @@ class UserMapper:
             isEmailConfirmed=user.is_email_confirmed,
             isActive=user.is_active,
             isDelete=user.is_deleted,
+            create_by=user.create_by,
+            update_by=user.update_by,
+            create_at=user.create_at,
+            update_at=user.update_at,
+            user_total_success_bookings=user.user_total_success_bookings,
+            user_total_failed_bookings=user.user_total_failed_bookings,
+            sale_total_bookings=user.sale_total_bookings,
+            sale_success_percent=user.sale_success_percent,
             roles=roles_list
         )
 
@@ -58,4 +82,8 @@ class UserMapper:
             update_at=user_dto.update_at,
             create_by=user_dto.create_by,
             update_by=user_dto.update_by,
+            user_total_success_bookings=user_dto.user_total_success_bookings if user_dto.user_total_success_bookings is not None else 0,
+            user_total_failed_bookings=user_dto.user_total_failed_bookings if user_dto.user_total_failed_bookings is not None else 0,
+            sale_total_bookings=user_dto.sale_total_bookings if user_dto.sale_total_bookings is not None else 0,
+            sale_success_percent=user_dto.sale_success_percent if user_dto.sale_success_percent is not None else 0.0,
         )

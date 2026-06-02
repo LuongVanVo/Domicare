@@ -1,4 +1,4 @@
-﻿import json
+import json
 import logging
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -30,7 +30,7 @@ def create_category(request):
         category = category_service.add_category(request_dto)
 
         return JsonResponse(
-            FormatRestResponse.success(data=category.model_dump()), status=http_status.HTTP_201_CREATED
+            FormatRestResponse.success(data=category.to_dict()), status=http_status.HTTP_201_CREATED
         )
     except ValidationError as e:
         return JsonResponse(FormatRestResponse.error(
@@ -58,7 +58,7 @@ def update_category(request):
         category = category_service.update_category(request_dto)
 
         return JsonResponse(FormatRestResponse.success(
-            data=category.model_dump(), message="Successfully updated category"
+            data=category.to_dict(), message="Successfully updated category"
         ), status=http_status.HTTP_200_OK)
     except ValidationError as e:
         return JsonResponse(FormatRestResponse.error(
@@ -104,7 +104,7 @@ def get_category_by_id(request, category_id: int):
         category = category_service.fetch_category_by_id(category_id)
 
         return JsonResponse(FormatRestResponse.success(
-            data=category.dict()
+            data=category.to_dict()
         ), status=http_status.HTTP_200_OK)
 
     except CategoryNotFoundException as e:
@@ -134,7 +134,7 @@ def get_all_categories(request):
 
         serialize_data = {
             "meta": result["meta"],
-            "data": [cat.model_dump() for cat in result["data"]]
+            "data": [cat.to_dict() for cat in result["data"]]
         }
 
         return JsonResponse(FormatRestResponse.success(

@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -28,7 +28,7 @@ def upload_file(request):
         # Upload file
         file_dto = file_service.upload_file(file, unique_name)
         return JsonResponse(FormatRestResponse.success(
-            data=file_dto.dict(),
+            data=file_dto.to_dict(),
             message='File upload successfully',
         ), status=http_status.HTTP_201_CREATED)
     except FileUploadException as e:
@@ -53,7 +53,7 @@ def get_file_by_id(request, file_id: int):
     """Get file by ID - No authentication required"""
     try:
         file_dto = file_service.fetch_file_by_id(file_id)
-        return JsonResponse(FormatRestResponse.success(data=file_dto.dict()), status=http_status.HTTP_200_OK)
+        return JsonResponse(FormatRestResponse.success(data=file_dto.to_dict()), status=http_status.HTTP_200_OK)
     except FileNotFoundException as e:
         return JsonResponse(FormatRestResponse.error(message=str(e)), status=http_status.HTTP_404_NOT_FOUND)
     except Exception as e:
@@ -83,9 +83,69 @@ def get_all_files(request):
     """Get all files"""
     try:
         files = file_service.fetch_all_files()
-        files_dict = [f.dict() for f in files]
+        files_dict = [f.to_dict() for f in files]
 
         return JsonResponse(FormatRestResponse.success(data=files_dict), status=http_status.HTTP_200_OK)
     except Exception as e:
         logger.error(f"[FileController] Error getting files: {str(e)}")
         return JsonResponse(FormatRestResponse.error(message="Internal server error"), status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@csrf_exempt
+@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+def upload_multiple_files(request):
+    """Upload multiple files to Cloudinary"""
+    try:
+        files = request.FILES.getlist('files')
+        if not files and 'file' in request.FILES:
+            files = request.FILES.getlist('file')
+            
+        if not files:
+            return JsonResponse(FormatRestResponse.error(message="No files provided"), status=http_status.HTTP_400_BAD_REQUEST)
+            
+        uploaded_dtos = []
+        for file in files:
+            unique_name = file.name
+            file_dto = file_service.upload_file(file, unique_name)
+            uploaded_dtos.append(file_dto.to_dict())
+            
+        return JsonResponse(FormatRestResponse.success(
+            data=uploaded_dtos,
+            message='Files uploaded successfully',
+        ), status=http_status.HTTP_201_CREATED)
+    except FileUploadException as e:
+        return JsonResponse(FormatRestResponse.error(message=str(e)), status=http_status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        logger.error(f"[FileController] Error uploading multiple files: {str(e)}")
+        return JsonResponse(FormatRestResponse.error(message="Internal server error"), status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@csrf_exempt
+@api_view(['GET', 'DELETE'])
+def file_detail(request, file_id: int):
+    """Get or delete file by ID"""
+    if request.method == 'DELETE':
+        # Authentication check
+        if not request.user or not request.user.is_authenticated:
+            return JsonResponse(FormatRestResponse.error(message="Authentication credentials were not provided."), status=http_status.HTTP_401_UNAUTHORIZED)
+        try:
+            file_service.delete_file(file_id)
+            return JsonResponse(FormatRestResponse.success(message='File deleted successfully'),
+                                status=http_status.HTTP_200_OK)
+        except FileNotFoundException as e:
+            return JsonResponse(FormatRestResponse.error(message=str(e)), status=http_status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"[FileController] Error deleting file: {str(e)}")
+            return JsonResponse(FormatRestResponse.error(message="Internal server error"),
+                                status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
+    else:
+        try:
+            file_dto = file_service.fetch_file_by_id(file_id)
+            return JsonResponse(FormatRestResponse.success(data=file_dto.to_dict()), status=http_status.HTTP_200_OK)
+        except FileNotFoundException as e:
+            return JsonResponse(FormatRestResponse.error(message=str(e)), status=http_status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"[FileController] Error getting file: {str(e)}")
+            return JsonResponse(FormatRestResponse.error(message="Internal server error"),
+                                status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
