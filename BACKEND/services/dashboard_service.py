@@ -1,4 +1,4 @@
-﻿from collections import OrderedDict
+from collections import OrderedDict
 from typing import List
 
 from django.utils import timezone
@@ -149,9 +149,8 @@ class DashboardService:
                 name=sale.name,
                 avatar=sale.avatar,
                 email=sale.email,
-                total_sale_price=getattr(sale, 'totalSalePrice', getattr(sale, 'totalSalePrice', 0.0)),
-                total_success_booking_percent=getattr(sale, 'totalSuccessBookingPercent',
-                                                      getattr(sale, 'total_success_booking_percent', 0.0))
+                total_sale_price=getattr(sale, 'total_sale_price', 0.0),
+                total_success_booking_percent=getattr(sale, 'total_success_booking_percent', 0.0)
             )
             for sale in top_sales_data
         ]
